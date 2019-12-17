@@ -26,20 +26,17 @@ def main():
     global args, best_prec1
     print(opt)
     print("=>creating model '{}".format(opt.model))
-    #model = models.resnet50(pretrained=True, num_classes=1000)
 
     if opt.model == 'resnet18':
         model = models.resnet18(pretrained=True, num_classes = 1000)
-    if opt.model == 'resnet50':
-        model = models.resnet50(pretrained=True, num_classes = 1000)
-    if opt.model == 'resnet34':
+    elif opt.model == 'resnet34':
         model = models.resnet34(pretrained=True, num_classes = 1000)
-    #model = torch.load('./models/resnet50.pth')
-    #print(model)
-    num_features = model.fc.in_features
-    model.fc = nn.Linear(num_features, 257)
-    model.cuda()
+    elif opt.model == 'resnet50':
+        model = models.resnet50(pretrained=True, num_classes=1000)
 
+    num_features = model.fc.in_features
+    model.fc = nn.Linear(num_features, opt.class_num)
+    model.cuda()
 
     # Data loading
     train_data = Caltech256(opt.train_data_root, train=True)
@@ -55,8 +52,10 @@ def main():
                                 pin_memory=True)
 
     # define loss function (criterion) and optimizer
-    # criterion = LabelSmoothSoftmaxCEV1(lb_smooth=0.1, lb_ignore=257).cuda()
-    criterion = nn.CrossEntropyLoss().cuda()
+    if opt.label_smooth:
+        criterion = LabelSmoothSoftmaxCEV1(lb_smooth=0.1, lb_ignore=257).cuda()
+    else:
+        criterion = nn.CrossEntropyLoss().cuda()
     optimizer = torch.optim.SGD(model.parameters(),
                                  lr = opt.lr,
                                 momentum=opt.momentum,
@@ -64,7 +63,8 @@ def main():
 
     for epoch in range(opt.max_epoch):
 
-        # adjust_learning_rate(epoch)
+        if opt.is_adjust_learning_rate:
+            adjust_learning_rate(epoch)
 
         # train for on epoch
         train(train_dataloader,model,criterion,optimizer,epoch)
@@ -76,10 +76,6 @@ def main():
         is_best = prec1 > best_prec1
         print('----当前精确度：',prec1,'----最好精确度-----',best_prec1)
         best_prec1 = max(prec1, best_prec1)
-
-
-        # if not is_best:
-        #     adjust_learning_rate()
 
         save_checkpoint({
             'epoch':epoch + 1,
@@ -117,22 +113,20 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
         # print(target)
 
-        target = target.cuda(async  = True)
-        input_var = torch.autograd.variable(input).cuda()
-        target_var = torch.autograd.variable(target).cuda()
-
-        # input_var = torch.autograd.Variable(input)
-        # target_var = torch.autograd.Variable(target)
+        if opt.use_gpu:
+            target = target.cuda(async  = True)
+            input_var = torch.autograd.variable(input).cuda()
+            target_var = torch.autograd.variable(target).cuda()
+        else:
+            input_var = torch.autograd.Variable(input)
+            target_var = torch.autograd.Variable(target)
         # compute
         output = model(input_var)
-        # print(output.size(),target_var.size())
+
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
         prec1, prec5 = accuracy(output.data, target, topk=(1,5))
-        # print(loss)
-        # print(loss.item())
-        # print(input.size())
         losses.update(loss.item(), input.size(0))
         top1.update(prec1.item(), input.size(0))
         top5.update(prec5.item(),input.size(0))

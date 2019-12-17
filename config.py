@@ -13,24 +13,36 @@ class DefaultConfig(object):
     # model = 'resnet34'
     model = 'resnet50'
 
+
+
+
+    # dataset path
     train_data_root = './data/caltech256/256_ObjectCategories'
     test_data_root =  './data/caltech256/256_ObjectCategories'
     load_model_path = 'checkpoints/model.pth'
 
 
+    # cnn config
+    class_num = 257   # label classes
     batch_size = 32
     use_gpu = True
     num_workers = 4
     print_freq = 10
-
-    debug_file = '/tmp/debug'
-    result_file = 'result.csv'
 
     max_epoch = 50
     lr = 0.001
     lr_decay = 0.01
     weight_decay = 0.01    # 权重衰减
     momentum = 0.9
+
+    # trick
+    label_smooth = True
+
+    # learning rate
+    is_adjust_learning_rate = False
+
+    debug_file = '/tmp/debug'
+    result_file = 'result.csv'
 
 
     def parse(self,kwargs):
