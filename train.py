@@ -20,6 +20,10 @@ from data.dataset import Caltech256
 from torch.utils.data import DataLoader
 import shutil
 import time
+import numpy as np
+from kelm import *
+
+
 
 best_prec1 = 0
 def main():
@@ -61,17 +65,24 @@ def main():
                                 momentum=opt.momentum,
                                  weight_decay= opt.weight_decay)
 
+
+    result = []
     for epoch in range(opt.max_epoch):
 
         if opt.is_adjust_learning_rate:
             adjust_learning_rate(epoch)
 
         # train for on epoch
-        train(train_dataloader,model,criterion,optimizer,epoch)
+        trainOutput,trainTarget = train(train_dataloader,model,criterion,optimizer,epoch)
 
-        # evaluate on validation set
-        prec1 = validate(val_dataloader,model,criterion)
+        clf = kelm_train(trainOutput,trainTarget,n_hidden=1000)
 
+
+         # evaluate on validation set
+        prec1,testOutput,testTarget = validate(val_dataloader,model,criterion)
+
+        kelm_prec1 =kelm_test(clf,trainOutput,trainTarget,prec1)
+        result.append([prec1,kelm_prec1,kelm_prec1-prec1])
         # remember best prec@1 and save checkpoint
         is_best = prec1 > best_prec1
         print('----当前精确度：',prec1,'----最好精确度-----',best_prec1)
@@ -83,6 +94,7 @@ def main():
             'state_dict' : model.state_dict(),
             'best_prec1' : prec1,
         },is_best,opt.model.lower())
+    write_csv(result,'result.csv')
 
 
 
@@ -105,8 +117,10 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
     # switch to train mode
     model.train()
-
     end = time.time()
+
+    trainOutput = []
+    trainTarget = []
     for i, (input, target) in enumerate(train_loader):
         # measure data loading time
         data_time.update(time.time() - end)
@@ -150,6 +164,19 @@ def train(train_loader, model, criterion, optimizer, epoch):
                 data_time=data_time, loss=losses, top1=top1, top5=top5))
 
 
+        output = output.cpu().detach().numpy()
+        if len(trainOutput)==0:
+            trainOutput = output
+            trainTarget = target
+            # trainIstrue = isTrue
+        else:
+            # trainOutput = np.append(trainOutput,output[0])
+            # trainTarget = np.append(trainTarget,target[0])
+            trainOutput = np.concatenate((trainOutput, output), axis=0)
+            trainTarget = np.concatenate((trainTarget, target), axis=0)
+            # trainIstrue = np.concatenate((trainIstrue, isTrue), axis=0)
+    return trainOutput,trainTarget
+
 
 
 class AverageMeter(object):
@@ -179,6 +206,9 @@ def validate(val_loader, model, criterion):
     model.eval()
 
     end = time.time()
+
+    testOutput = []
+    testTarget = []
     for i ,(input, target) in enumerate(val_loader):
         target = target.cuda(async = True)
         input_var = torch.autograd.variable(input).cuda()
@@ -209,10 +239,21 @@ def validate(val_loader, model, criterion):
             'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
                 i, len(val_loader), batch_time=batch_time, loss=losses,
                 top1=top1, top5=top5))
+
+        output = output.cpu().detach().numpy()
+        if len(testOutput)==0:
+            testOutput = output
+            testTarget = target
+            # trainIstrue = isTrue
+        else:
+            # trainOutput = np.append(trainOutput,output[0])
+            # trainTarget = np.append(trainTarget,target[0])
+            trainOutput = np.concatenate((testOutput, output), axis=0)
+            trainTarget = np.concatenate((testTarget, target), axis=0)
+            # trainIstrue = np.concatenate((trainIstrue, isTrue), axis=0)
     print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
           .format(top1=top1, top5=top5))
-
-    return top1.avg
+    return top1.avg,testOutput,testTarget
 
 
 
@@ -220,7 +261,7 @@ def write_csv(results, file_name):
     import csv
     with open(file_name,'w') as f:
         writer = csv.writer(f)
-        writer.writerow(['id','label'])
+        writer.writerow(['cnn','cnn_kelm','promotion'])
         writer.writerows(results)
 
 def accuracy(output, target,topk=(1,)):

@@ -13,14 +13,10 @@ class DefaultConfig(object):
     # model = 'resnet34'
     model = 'resnet50'
 
-
-
-
     # dataset path
     train_data_root = './data/caltech256/256_ObjectCategories'
     test_data_root =  './data/caltech256/256_ObjectCategories'
     load_model_path = 'checkpoints/model.pth'
-
 
     # cnn config
     class_num = 257   # label classes
@@ -29,7 +25,7 @@ class DefaultConfig(object):
     num_workers = 4
     print_freq = 10
 
-    max_epoch = 50
+    max_epoch = 100
     lr = 0.001
     lr_decay = 0.01
     weight_decay = 0.01    # 权重衰减
@@ -43,15 +39,12 @@ class DefaultConfig(object):
 
     debug_file = '/tmp/debug'
     result_file = 'result.csv'
-
-
     def parse(self,kwargs):
         '''
         based dictionary to update the param of config
         :param kwargs:
         :return:
         '''
-
         for k, v in kwargs.items():
             if not hasattr(self, k):
                 warnings.warn("Warning: opt has no attribut %s" %k)

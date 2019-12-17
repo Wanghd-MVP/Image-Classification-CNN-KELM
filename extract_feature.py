@@ -57,10 +57,6 @@ def main(train = True):
     for i, (input, target) in enumerate(dataloader):
         target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input, volatile=True).cuda()
-        # compute output
-        # output = model(input_var).cpu().detach().numpy()
-        # isTrue = output.argmax(axis=1) == target
-
         remove_fc_model = nn.Sequential(*list(model.children())[:-1])
         feature = remove_fc_model(input_var).cpu().detach().numpy()
         feature = feature.reshape(input.size(0), -1)

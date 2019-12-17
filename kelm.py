@@ -56,6 +56,36 @@ def main():
     print(acc-state['best_prec1'])
 
 
+def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000):
+    print("开始训练：")
+    start = time.time()
+
+    if hidden_layer == 'rbf':
+        siglayer = RBFRandomHiddenLayer(n_hidden=n_hidden, gamma=1e-4, use_exemplars=False)
+    else:
+        siglayer = SimpleRandomHiddenLayer(n_hidden=n_hidden, activation_func='sigmoid')
+
+    clf = ELMClassifier(siglayer)
+    clf.fit(x_train, y_train)
+    end = time.time()
+    print("训练时间", end - start)
+    return clf
+    # joblib.dump(clf, './KELM/' + opt.model + '_KELM_' + str(n_hidden) + '.pkl')
+
+
+def kelm_test(clf ,x_test, y_test,prec1 = 0):
+    print("开始测试：")
+    start = time.time()
+    pre_result = clf.predict(x_test)
+    end = time.time()
+    print("测试时间", end - start)
+    isTrue = pre_result == y_test
+    acc = np.sum(isTrue == True) / pre_result.size * 100
+    print(acc)
+    print(acc - prec1)
+    return acc
+
+
 
 if __name__ == '__main__':
     main()
