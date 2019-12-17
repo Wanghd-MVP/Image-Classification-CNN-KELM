@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # x_test = normalize(x_test, axis=0, norm='max')
     print("开始训练：")
     start = time.time()
-    n_hidden = 5000
+    n_hidden = 1000
     # baseline 75.4724
     # 700 75.50
     # 800 75.61
