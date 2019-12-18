@@ -25,20 +25,20 @@ class DefaultConfig(object):
     num_workers = 4
     print_freq = 10
 
-    max_epoch = 100
-    lr = 0.001
+    max_epoch = 50
+    lr = 0.0001
     lr_decay = 0.01
     weight_decay = 0.01    # 权重衰减
     momentum = 0.9
 
     # trick
-    label_smooth = True
+    label_smooth = False
 
     # learning rate
     is_adjust_learning_rate = False
 
     debug_file = '/tmp/debug'
-    result_file = 'result.csv'
+    result_file = 'resnet50_nolabel_smooth_lr10-4.csv'
     def parse(self,kwargs):
         '''
         based dictionary to update the param of config

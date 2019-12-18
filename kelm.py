@@ -59,7 +59,6 @@ def main():
 def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000):
     print("开始训练：")
     start = time.time()
-
     if hidden_layer == 'rbf':
         siglayer = RBFRandomHiddenLayer(n_hidden=n_hidden, gamma=1e-4, use_exemplars=False)
     else:
@@ -81,8 +80,8 @@ def kelm_test(clf ,x_test, y_test,prec1 = 0):
     print("测试时间", end - start)
     isTrue = pre_result == y_test
     acc = np.sum(isTrue == True) / pre_result.size * 100
-    print(acc)
-    print(acc - prec1)
+    print('精确度',acc)
+    print('提升',acc - prec1)
     return acc
 
 

@@ -73,16 +73,19 @@ def main():
             adjust_learning_rate(epoch)
 
         # train for on epoch
-        trainOutput,trainTarget = train(train_dataloader,model,criterion,optimizer,epoch)
-
-        clf = kelm_train(trainOutput,trainTarget,n_hidden=1000)
-
+        trainOutput,trainFeature,trainTarget = train(train_dataloader,model,criterion,optimizer,epoch)
 
          # evaluate on validation set
-        prec1,testOutput,testTarget = validate(val_dataloader,model,criterion)
+        prec1,testOutput,testFeature,testTarget = validate(val_dataloader,model,criterion)
 
-        kelm_prec1 =kelm_test(clf,trainOutput,trainTarget,prec1)
-        result.append([prec1,kelm_prec1,kelm_prec1-prec1])
+        label_clf = kelm_train(trainOutput, trainTarget, n_hidden=1000)
+        label_kelm_prec1 =kelm_test(label_clf,testOutput,testTarget,prec1)
+
+        feature_clf = kelm_train(trainFeature,trainTarget,n_hidden=1000)
+        feature_kelm_prec1 = kelm_test(feature_clf,testFeature,testTarget,prec1)
+
+        result.append([prec1,label_kelm_prec1,label_kelm_prec1-prec1,
+                       feature_kelm_prec1,feature_kelm_prec1-prec1])
         # remember best prec@1 and save checkpoint
         is_best = prec1 > best_prec1
         print('----当前精确度：',prec1,'----最好精确度-----',best_prec1)
@@ -94,7 +97,7 @@ def main():
             'state_dict' : model.state_dict(),
             'best_prec1' : prec1,
         },is_best,opt.model.lower())
-    write_csv(result,'result.csv')
+    write_csv(result,opt.result_file)
 
 
 
@@ -119,8 +122,10 @@ def train(train_loader, model, criterion, optimizer, epoch):
     model.train()
     end = time.time()
 
-    trainOutput = []
-    trainTarget = []
+    trainOutput = []   # label
+    trainFeature = []  # feature
+    trainTarget = []   # target
+
     for i, (input, target) in enumerate(train_loader):
         # measure data loading time
         data_time.update(time.time() - end)
@@ -136,6 +141,11 @@ def train(train_loader, model, criterion, optimizer, epoch):
             target_var = torch.autograd.Variable(target)
         # compute
         output = model(input_var)
+
+
+        remove_fc_model = nn.Sequential(*list(model.children())[:-1])
+        feature = remove_fc_model(input_var).cpu().detach().numpy()
+        feature = feature.reshape(input.size(0), -1)
 
         loss = criterion(output, target_var)
 
@@ -165,17 +175,23 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
 
         output = output.cpu().detach().numpy()
+
+
         if len(trainOutput)==0:
             trainOutput = output
             trainTarget = target
+            trainFeature = feature
             # trainIstrue = isTrue
         else:
             # trainOutput = np.append(trainOutput,output[0])
             # trainTarget = np.append(trainTarget,target[0])
             trainOutput = np.concatenate((trainOutput, output), axis=0)
             trainTarget = np.concatenate((trainTarget, target), axis=0)
+            trainFeature = np.concatenate((trainFeature,feature),axis=0)
             # trainIstrue = np.concatenate((trainIstrue, isTrue), axis=0)
-    return trainOutput,trainTarget
+
+
+    return trainOutput,trainFeature,trainTarget
 
 
 
@@ -208,6 +224,7 @@ def validate(val_loader, model, criterion):
     end = time.time()
 
     testOutput = []
+    testFeature = []  # feature
     testTarget = []
     for i ,(input, target) in enumerate(val_loader):
         target = target.cuda(async = True)
@@ -219,6 +236,13 @@ def validate(val_loader, model, criterion):
         # model = model.cpu()
         # compute output
         output = model(input_var)
+
+
+        # extract the feature
+        remove_fc_model = nn.Sequential(*list(model.children())[:-1])
+        feature = remove_fc_model(input_var).cpu().detach().numpy()
+        feature = feature.reshape(input.size(0), -1)
+
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
@@ -244,25 +268,34 @@ def validate(val_loader, model, criterion):
         if len(testOutput)==0:
             testOutput = output
             testTarget = target
+            testFeature = feature
             # trainIstrue = isTrue
         else:
-            # trainOutput = np.append(trainOutput,output[0])
-            # trainTarget = np.append(trainTarget,target[0])
-            trainOutput = np.concatenate((testOutput, output), axis=0)
-            trainTarget = np.concatenate((testTarget, target), axis=0)
+            testOutput = np.concatenate((testOutput, output), axis=0)
+            testTarget = np.concatenate((testTarget, target), axis=0)
+            testFeature = np.concatenate((testFeature,feature),axis=0)
             # trainIstrue = np.concatenate((trainIstrue, isTrue), axis=0)
     print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
           .format(top1=top1, top5=top5))
-    return top1.avg,testOutput,testTarget
+    return top1.avg,testOutput,testFeature,testTarget
 
 
 
+
+#
 def write_csv(results, file_name):
     import csv
-    with open(file_name,'w') as f:
-        writer = csv.writer(f)
-        writer.writerow(['cnn','cnn_kelm','promotion'])
-        writer.writerows(results)
+    if os.path.exists(file_name):
+        with open(file_name,'a+') as f:
+            writer = csv.writer(f)
+            # writer.writerow(['cnn','label_cnn_kelm','label_promotion','feature_cnn_kelm','feature_promotion'])
+            writer.writerows(results)
+    else:
+        with open(file_name,'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['cnn','label_cnn_kelm','label_promotion','feature_cnn_kelm','feature_promotion'])
+            writer.writerows(results)
+
 
 def accuracy(output, target,topk=(1,)):
     # compuates the precision@k
