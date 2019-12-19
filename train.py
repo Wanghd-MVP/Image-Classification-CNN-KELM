@@ -78,11 +78,18 @@ def main():
          # evaluate on validation set
         prec1,testOutput,testFeature,testTarget = validate(val_dataloader,model,criterion)
 
-        label_clf = kelm_train(trainOutput, trainTarget, n_hidden=1000)
-        label_kelm_prec1 =kelm_test(label_clf,testOutput,testTarget,prec1)
+        label_kelm_prec1 =0
 
-        feature_clf = kelm_train(trainFeature,trainTarget,n_hidden=1000)
-        feature_kelm_prec1 = kelm_test(feature_clf,testFeature,testTarget,prec1)
+        if opt.is_label_elm:
+            label_clf = kelm_train(trainOutput, trainTarget
+                                   ,hidden_layer=opt.label_kernel,n_hidden=opt.label_hidden_node)
+            label_kelm_prec1 =kelm_test(label_clf,testOutput,testTarget,prec1)
+
+        feature_kelm_prec1 = 0
+        if opt.is_feature_elm:
+            feature_clf = kelm_train(trainFeature,trainTarget
+                                     ,hidden_layer=opt.feature_kernel,n_hidden=opt.feature_hidden_node)
+            feature_kelm_prec1 = kelm_test(feature_clf,testFeature,testTarget,prec1)
 
         result.append([prec1,label_kelm_prec1,label_kelm_prec1-prec1,
                        feature_kelm_prec1,feature_kelm_prec1-prec1])
@@ -97,7 +104,7 @@ def main():
             'state_dict' : model.state_dict(),
             'best_prec1' : prec1,
         },is_best,opt.model.lower())
-    write_csv(result,opt.result_file)
+        write_csv(result,opt.result_file)
 
 
 
@@ -189,7 +196,6 @@ def train(train_loader, model, criterion, optimizer, epoch):
             trainTarget = np.concatenate((trainTarget, target), axis=0)
             trainFeature = np.concatenate((trainFeature,feature),axis=0)
             # trainIstrue = np.concatenate((trainIstrue, isTrue), axis=0)
-
 
     return trainOutput,trainFeature,trainTarget
 
@@ -286,14 +292,14 @@ def validate(val_loader, model, criterion):
 def write_csv(results, file_name):
     import csv
     if os.path.exists(file_name):
-        with open(file_name,'a+') as f:
-            writer = csv.writer(f)
-            # writer.writerow(['cnn','label_cnn_kelm','label_promotion','feature_cnn_kelm','feature_promotion'])
-            writer.writerows(results)
-    else:
         with open(file_name,'w') as f:
             writer = csv.writer(f)
             writer.writerow(['cnn','label_cnn_kelm','label_promotion','feature_cnn_kelm','feature_promotion'])
+            writer.writerows(results)
+    else:
+        with open(file_name,'a+') as f:
+            writer = csv.writer(f)
+            # writer.writerow(['cnn','label_cnn_kelm','label_promotion','feature_cnn_kelm','feature_promotion'])
             writer.writerows(results)
 
 

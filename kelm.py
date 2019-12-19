@@ -61,7 +61,7 @@ def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000):
     start = time.time()
     if hidden_layer == 'rbf':
         siglayer = RBFRandomHiddenLayer(n_hidden=n_hidden, gamma=1e-4, use_exemplars=False)
-    else:
+    elif hidden_layer == 'sigmoid':
         siglayer = SimpleRandomHiddenLayer(n_hidden=n_hidden, activation_func='sigmoid')
 
     clf = ELMClassifier(siglayer)
@@ -69,7 +69,7 @@ def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000):
     end = time.time()
     print("训练时间", end - start)
     return clf
-    # joblib.dump(clf, './KELM/' + opt.model + '_KELM_' + str(n_hidden) + '.pkl')
+    # joblib.dump(clf, './KELM/·' + opt.model + '_KELM_' + str(n_hidden) + '.pkl')
 
 
 def kelm_test(clf ,x_test, y_test,prec1 = 0):

@@ -31,14 +31,32 @@ class DefaultConfig(object):
     weight_decay = 0.01    # 权重衰减
     momentum = 0.9
 
-    # trick
-    label_smooth = False
+    # trick.
+    label_smooth = True
 
     # learning rate
     is_adjust_learning_rate = False
 
-    debug_file = '/tmp/debug'
-    result_file = 'resnet50_nolabel_smooth_lr10-4.csv'
+
+    #  是否需要label  elm
+    is_label_elm = True
+    label_kernel = 'rbf'
+    label_hidden_node = 1000
+
+
+    # 是否需要基于feature elm
+    is_feature_elm = True
+    feature_kernel = 'rbf'  # rbf or sigmoid
+    feature_hidden_node = 1000
+
+    reuslt_file = model
+    if label_smooth:
+        reuslt_file += '_ls_'
+
+    reuslt_file += feature_kernel +'_'
+
+    reuslt_file += label_hidden_node
+    result_file = '.csv'
     def parse(self,kwargs):
         '''
         based dictionary to update the param of config
