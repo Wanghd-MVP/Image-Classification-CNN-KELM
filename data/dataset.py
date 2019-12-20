@@ -14,7 +14,7 @@ from torchvision import transforms as T
 from config import opt
 class Caltech256(data.Dataset):
 
-    def __init__(self,root, transforms = None, train= True,test = False):
+    def __init__(self,root, transforms = None, train= True):
         '''
         main goal: get all address of image
         :param root:
@@ -23,37 +23,23 @@ class Caltech256(data.Dataset):
         :param test:
         '''
 
-        self.test = test
         paths = [os.path.join(root, path) for path in os.listdir(root)]
         imgs = []
-        if self.test:
-            for path in paths:
-                for i in os.listdir(path)[60:]:
-                    imgs.append(os.path.join(path,i))
-            self.imgs = imgs
-        elif train:
+        if train:
             for path in paths:
                 for i in os.listdir(path)[:60]:
                     imgs.append(os.path.join(path,i))
-                #imgs += os.listdir(path)[:60]
-            self.imgs = imgs
-        else:
+        else :
             for path in paths:
                 for i in os.listdir(path)[60:]:
                     imgs.append(os.path.join(path,i))
-            self.imgs = imgs
+                #imgs += os.listdir(path)[:60]
+        self.imgs = imgs
 
         normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                     std=[0.229, 0.224, 0.225])
 
-        if self.test or not train:
-            self.transforms = T.Compose([
-                T.Resize(224),
-                T.CenterCrop(224),
-                T.ToTensor(),
-                normalize
-            ])
-        else:
+        if train:
             self.transforms = T.Compose([
                 T.Resize(256),
                 T.RandomResizedCrop(224),
@@ -61,6 +47,15 @@ class Caltech256(data.Dataset):
                 T.ToTensor(),
                 normalize
             ])
+
+        else:
+            self.transforms = T.Compose([
+                T.Resize(224),
+                T.CenterCrop(224),
+                T.ToTensor(),
+                normalize
+            ])
+
 
     def __getitem__(self, index):
         '''
@@ -80,5 +75,60 @@ class Caltech256(data.Dataset):
 
     def __len__(self):
         return len(self.imgs)
+
+
+import os
+import pickle
+
+
+import numpy
+from torch.utils.data import Dataset
+
+class CIFAR100(Dataset):
+    """cifar100 test dataset, derived from
+    torch.utils.data.DataSet
+    """
+
+    def __init__(self, path, transforms=None,train= True):
+
+        mean = (0.5070751592371323, 0.48654887331495095, 0.4409178433670343)
+        std = (0.2673342858792401, 0.2564384629170883, 0.27615047132568404)
+
+        if train:
+            with open(os.path.join(path, 'train'), 'rb') as cifar100:
+                self.data = pickle.load(cifar100, encoding='bytes')
+            transforms = T.Compose([
+                # transforms.ToPILImage(),
+                T.RandomCrop(32, padding=4),
+                T.RandomHorizontalFlip(),
+                T.RandomRotation(15),
+                T.ToTensor(),
+                T.Normalize(mean, std)
+            ])
+        else:
+            with open(os.path.join(path, 'test'), 'rb') as cifar100:
+                self.data = pickle.load(cifar100, encoding='bytes')
+            transforms = T.Compose([
+                T.ToTensor(),
+                T.Normalize(mean, std)
+            ])
+        self.transforms= transforms
+
+    def __len__(self):
+        return len(self.data['fine_labels'.encode()])
+
+    def __getitem__(self, index):
+        label = self.data['fine_labels'.encode()][index]
+        # print(label)
+        r = self.data['data'.encode()][index, :1024].reshape(32, 32)
+        g = self.data['data'.encode()][index, 1024:2048].reshape(32, 32)
+        b = self.data['data'.encode()][index, 2048:].reshape(32, 32)
+        image = numpy.dstack((r, g, b))
+        from PIL import Image
+        image = Image.fromarray(image)
+        if self.transforms:
+            image = self.transforms(image)
+        return image,label
+
 
 

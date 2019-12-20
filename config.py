@@ -12,14 +12,28 @@ class DefaultConfig(object):
     # model = 'resnet18'
     # model = 'resnet34'
     model = 'resnet50'
+    pretrained = False
 
     # dataset path
-    train_data_root = './data/caltech256/256_ObjectCategories'
-    test_data_root =  './data/caltech256/256_ObjectCategories'
+    Caltech256_data_root = './data/caltech256/256_ObjectCategories'
+    # CIFAR-100
+    Cifar100_data_root = './data/cifar-100-python'
+
     load_model_path = 'checkpoints/model.pth'
 
+    #dataset = 'caltech256'
+    dataset = 'cifar100'
+
+    if dataset == 'caltech256':
+        data_root = Caltech256_data_root
+        class_num = 256
+
+    elif dataset == 'cifar100':
+        data_root = Cifar100_data_root
+        class_num = 101
+    else:
+        pass
     # cnn config
-    class_num = 257   # label classes
     batch_size = 32
     use_gpu = True
     num_workers = 4
@@ -49,14 +63,14 @@ class DefaultConfig(object):
     feature_kernel = 'rbf'  # rbf or sigmoid
     feature_hidden_node = 1000
 
-    reuslt_file = model
+    result_file = dataset+'_'+model
     if label_smooth:
-        reuslt_file += '_ls_'
+        result_file += '_ls_'
 
-    reuslt_file += feature_kernel +'_'
+    result_file += feature_kernel +'_'
 
-    reuslt_file += label_hidden_node
-    result_file = '.csv'
+    result_file += str(label_hidden_node)
+    result_file += '.csv'
     def parse(self,kwargs):
         '''
         based dictionary to update the param of config

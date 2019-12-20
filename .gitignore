@@ -1,4 +1,5 @@
 *.pyc
 /data/caltech256/*
+/data/cifar-100-python/*
 ./idea/
 

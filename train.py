@@ -17,6 +17,7 @@ from utils import Visualizer
 from torchvision import models
 from torchnet import meter
 from data.dataset import Caltech256
+from data.dataset import CIFAR100
 from torch.utils.data import DataLoader
 import shutil
 import time
@@ -28,23 +29,37 @@ from kelm import *
 best_prec1 = 0
 def main():
     global args, best_prec1
-    print(opt)
+    print(opt.result_file)
     print("=>creating model '{}".format(opt.model))
 
-    if opt.model == 'resnet18':
-        model = models.resnet18(pretrained=True, num_classes = 1000)
-    elif opt.model == 'resnet34':
-        model = models.resnet34(pretrained=True, num_classes = 1000)
-    elif opt.model == 'resnet50':
-        model = models.resnet50(pretrained=True, num_classes=1000)
-
+    if opt.pretrained:
+        if opt.model == 'resnet18':
+            model = models.resnet18(pretrained=True, num_classes = 1000)
+        elif opt.model == 'resnet34':
+            model = models.resnet34(pretrained=True, num_classes = 1000)
+        elif opt.model == 'resnet50':
+            model = models.resnet50(pretrained=False, num_classes=1000)
+    else:
+        from models import ResNet
+        if opt.model == 'resnet18':
+            model = ResNet.resnet18()
+        elif opt.model == 'resnet34':
+            model = ResNet.resnet34()
+        elif opt.model == 'resnet50':
+            model = ResNet.resnet50()
     num_features = model.fc.in_features
     model.fc = nn.Linear(num_features, opt.class_num)
     model.cuda()
 
     # Data loading
-    train_data = Caltech256(opt.train_data_root, train=True)
-    val_data = Caltech256(opt.train_data_root, train=False)
+    if opt.dataset == 'caltech256':
+        train_data = Caltech256(opt.data_root, train=True)
+        val_data = Caltech256(opt.data_root, train=False)
+    elif opt.dataset == 'cifar100':
+        train_data = CIFAR100(opt.data_root, train=True)
+        val_data = CIFAR100(opt.data_root, train=False)
+
+
     train_dataloader = DataLoader(train_data,
                                   batch_size=opt.batch_size,
                                   shuffle=True,
