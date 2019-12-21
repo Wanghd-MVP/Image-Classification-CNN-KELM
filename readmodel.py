@@ -9,5 +9,6 @@
 import torch
 from config import opt
 state = torch.load(opt.model +"_best.pth.tar")
+print(state['epoch'])
 print(state['best_prec1'])
 

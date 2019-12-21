@@ -95,26 +95,29 @@ def main():
             adjust_learning_rate(epoch)
 
         # train for on epoch
-        trainOutput,trainFeature,trainTarget = train(train_dataloader,model,criterion,optimizer,epoch)
+        # trainOutput,trainFeature,trainTarget = train(train_dataloader,model,criterion,optimizer,epoch)
+        train(train_dataloader,model,criterion,optimizer,epoch)
 
          # evaluate on validation set
         prec1,testOutput,testFeature,testTarget = validate(val_dataloader,model,criterion)
+        prec1 = validate(val_dataloader,model,criterion)
 
         label_kelm_prec1 =0
 
-        if opt.is_label_elm:
-            label_clf = kelm_train(trainOutput, trainTarget
-                                   ,hidden_layer=opt.label_kernel,n_hidden=opt.label_hidden_node)
-            label_kelm_prec1 =kelm_test(label_clf,testOutput,testTarget,prec1)
-
-        feature_kelm_prec1 = 0
-        if opt.is_feature_elm:
-            feature_clf = kelm_train(trainFeature,trainTarget
-                                     ,hidden_layer=opt.feature_kernel,n_hidden=opt.feature_hidden_node)
-            feature_kelm_prec1 = kelm_test(feature_clf,testFeature,testTarget,prec1)
-
-        result.append([prec1,label_kelm_prec1,label_kelm_prec1-prec1,
-                       feature_kelm_prec1,feature_kelm_prec1-prec1])
+        # if opt.is_label_elm:
+        #     label_clf = kelm_train(trainOutput, trainTarget
+        #                            ,hidden_layer=opt.label_kernel,n_hidden=opt.label_hidden_node)
+        #     label_kelm_prec1 =kelm_test(label_clf,testOutput,testTarget,prec1)
+        #
+        # feature_kelm_prec1 = 0
+        # if opt.is_feature_elm:
+        #     feature_clf = kelm_train(trainFeature,trainTarget
+        #                              ,hidden_layer=opt.feature_kernel,n_hidden=opt.feature_hidden_node)
+        #     feature_kelm_prec1 = kelm_test(feature_clf,testFeature,testTarget,prec1)
+        #
+        # result.append([prec1,label_kelm_prec1,label_kelm_prec1-prec1,
+        #                feature_kelm_prec1,feature_kelm_prec1-prec1])
+        result.append([epoch,prec1])
         # remember best prec@1 and save checkpoint
         is_best = prec1 > best_prec1
         print('----当前精确度：',prec1,'----最好精确度-----',best_prec1)
@@ -179,10 +182,10 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # compute
         output = model(input_var)
 
-
-        remove_fc_model = nn.Sequential(*list(model.children())[:-1])
-        feature = remove_fc_model(input_var).cpu().detach().numpy()
-        feature = feature.reshape(input.size(0), -1)
+        #
+        # remove_fc_model = nn.Sequential(*list(model.children())[:-1])
+        # feature = remove_fc_model(input_var).cpu().detach().numpy()
+        # feature = feature.reshape(input.size(0), -1)
 
         loss = criterion(output, target_var)
 
@@ -211,19 +214,19 @@ def train(train_loader, model, criterion, optimizer, epoch):
                 data_time=data_time, loss=losses, top1=top1, top5=top5))
 
 
-        output = output.cpu().detach().numpy()
+        # output = output.cpu().detach().numpy()
+        #
+        #
+        # if len(trainOutput)==0:
+        #     trainOutput = output
+        #     trainTarget = target
+        #     trainFeature = feature
+        # else:
+        #     trainOutput = np.concatenate((trainOutput, output), axis=0)
+        #     trainTarget = np.concatenate((trainTarget, target), axis=0)
+        #     trainFeature = np.concatenate((trainFeature,feature),axis=0)
 
-
-        if len(trainOutput)==0:
-            trainOutput = output
-            trainTarget = target
-            trainFeature = feature
-        else:
-            trainOutput = np.concatenate((trainOutput, output), axis=0)
-            trainTarget = np.concatenate((trainTarget, target), axis=0)
-            trainFeature = np.concatenate((trainFeature,feature),axis=0)
-
-    return trainOutput,trainFeature,trainTarget
+    # return trainOutput,trainFeature,trainTarget
 
 
 
@@ -254,10 +257,10 @@ def validate(val_loader, model, criterion):
     model.eval()
 
     end = time.time()
-
-    testOutput = []
-    testFeature = []  # feature
-    testTarget = []
+    #
+    # testOutput = []
+    # testFeature = []  # feature
+    # testTarget = []
     for i ,(input, target) in enumerate(val_loader):
         target = target.cuda(async = True)
         input_var = torch.autograd.variable(input).cuda()
@@ -271,9 +274,9 @@ def validate(val_loader, model, criterion):
 
 
         # extract the feature
-        remove_fc_model = nn.Sequential(*list(model.children())[:-1])
-        feature = remove_fc_model(input_var).cpu().detach().numpy()
-        feature = feature.reshape(input.size(0), -1)
+        # remove_fc_model = nn.Sequential(*list(model.children())[:-1])
+        # feature = remove_fc_model(input_var).cpu().detach().numpy()
+        # feature = feature.reshape(input.size(0), -1)
 
         loss = criterion(output, target_var)
 
@@ -296,21 +299,21 @@ def validate(val_loader, model, criterion):
                 i, len(val_loader), batch_time=batch_time, loss=losses,
                 top1=top1, top5=top5))
 
-        output = output.cpu().detach().numpy()
-        if len(testOutput)==0:
-            testOutput = output
-            testTarget = target
-            testFeature = feature
-            # trainIstrue = isTrue
-        else:
-            testOutput = np.concatenate((testOutput, output), axis=0)
-            testTarget = np.concatenate((testTarget, target), axis=0)
-            testFeature = np.concatenate((testFeature,feature),axis=0)
-            # trainIstrue = np.concatenate((trainIstrue, isTrue), axis=0)
+        # output = output.cpu().detach().numpy()
+        # if len(testOutput)==0:
+        #     testOutput = output
+        #     testTarget = target
+        #     testFeature = feature
+        #     # trainIstrue = isTrue
+        # else:
+        #     testOutput = np.concatenate((testOutput, output), axis=0)
+        #     testTarget = np.concatenate((testTarget, target), axis=0)
+        #     testFeature = np.concatenate((testFeature,feature),axis=0)
+        #     # trainIstrue = np.concatenate((trainIstrue, isTrue), axis=0)
     print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
           .format(top1=top1, top5=top5))
-    return top1.avg,testOutput,testFeature,testTarget
-
+    # return top1.avg,testOutput,testFeature,testTarget
+    return top1.avg
 
 
 
