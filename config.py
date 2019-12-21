@@ -34,12 +34,13 @@ class DefaultConfig(object):
     else:
         pass
     # cnn config
-    batch_size = 32
+    train_batch_size = 128
+    test_batch_size = 128
     use_gpu = True
     num_workers = 4
     print_freq = 10
 
-    max_epoch = 50
+    max_epoch = 300
     lr = 0.0001
     lr_decay = 0.01
     weight_decay = 0.01    # 权重衰减
@@ -53,13 +54,13 @@ class DefaultConfig(object):
 
 
     #  是否需要label  elm
-    is_label_elm = True
+    is_label_elm = False
     label_kernel = 'rbf'
     label_hidden_node = 1000
 
 
     # 是否需要基于feature elm
-    is_feature_elm = True
+    is_feature_elm = False
     feature_kernel = 'rbf'  # rbf or sigmoid
     feature_hidden_node = 1000
 
@@ -68,7 +69,7 @@ class DefaultConfig(object):
         result_file += '_ls_'
 
     result_file += feature_kernel +'_'
-
+    result_file += str(lr)
     result_file += str(label_hidden_node)
     result_file += '.csv'
     def parse(self,kwargs):

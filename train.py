@@ -12,7 +12,6 @@ from tqdm import tqdm
 
 from LossFunction.label_smoothing import LabelSmoothSoftmaxCEV1
 from config import opt
-from utils import Visualizer
 # import models
 from torchvision import models
 from torchnet import meter
@@ -25,7 +24,7 @@ import numpy as np
 from kelm import *
 
 
-
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,2'
 best_prec1 = 0
 def main():
     global args, best_prec1
@@ -49,7 +48,15 @@ def main():
             model = ResNet.resnet50()
     num_features = model.fc.in_features
     model.fc = nn.Linear(num_features, opt.class_num)
+
+    model = nn.DataParallel(model)
     model.cuda()
+
+    filename = opt.dataset+'_'+opt.model.lower()+'/240.pth.tar'
+    pth = torch.load(filename)
+    state_dict = pth['state_dict']
+    start_epoch = pth['epoch']
+    model.load_state_dict(state_dict)
 
     # Data loading
     if opt.dataset == 'caltech256':
@@ -61,11 +68,11 @@ def main():
 
 
     train_dataloader = DataLoader(train_data,
-                                  batch_size=opt.batch_size,
+                                  batch_size=opt.train_batch_size,
                                   shuffle=True,
                                   num_workers=opt.num_workers,
                                   pin_memory=True)
-    val_dataloader = DataLoader(val_data, 16,
+    val_dataloader = DataLoader(val_data, opt.test_batch_size,
                                 shuffle=False,
                                 num_workers=opt.num_workers,
                                 pin_memory=True)
@@ -82,7 +89,7 @@ def main():
 
 
     result = []
-    for epoch in range(opt.max_epoch):
+    for epoch in range(start_epoch+1,opt.max_epoch):
 
         if opt.is_adjust_learning_rate:
             adjust_learning_rate(epoch)
@@ -119,6 +126,14 @@ def main():
             'state_dict' : model.state_dict(),
             'best_prec1' : prec1,
         },is_best,opt.model.lower())
+
+        save_everypoint({
+            'epoch':epoch + 1,
+            'model': opt.model,
+            'state_dict' : model.state_dict(),
+            'best_prec1' : prec1,
+        },opt.dataset+'_'+opt.model.lower(),epoch + 1)
+
         write_csv(result,opt.result_file)
 
 
@@ -203,14 +218,10 @@ def train(train_loader, model, criterion, optimizer, epoch):
             trainOutput = output
             trainTarget = target
             trainFeature = feature
-            # trainIstrue = isTrue
         else:
-            # trainOutput = np.append(trainOutput,output[0])
-            # trainTarget = np.append(trainTarget,target[0])
             trainOutput = np.concatenate((trainOutput, output), axis=0)
             trainTarget = np.concatenate((trainTarget, target), axis=0)
             trainFeature = np.concatenate((trainFeature,feature),axis=0)
-            # trainIstrue = np.concatenate((trainIstrue, isTrue), axis=0)
 
     return trainOutput,trainFeature,trainTarget
 
@@ -334,6 +345,12 @@ def accuracy(output, target,topk=(1,)):
         correct_k = correct[:k].view(-1).float().sum(0)
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
+
+def save_everypoint(state, filename,epoch =0 ):
+    if not os.path.exists(filename):
+        os.mkdir(filename)
+    torch.save(state,filename+'/'+str(epoch)+'.pth.tar')
+
 
 def save_checkpoint(state, is_best, filename = 'checkpoint.pth.tar'):
     torch.save(state,filename + '_latest.pth.tar')

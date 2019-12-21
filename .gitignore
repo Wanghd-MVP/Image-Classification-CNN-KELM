@@ -2,4 +2,6 @@
 /data/caltech256/*
 /data/cifar-100-python/*
 ./idea/
+.DS_Store
+.idea/*
 

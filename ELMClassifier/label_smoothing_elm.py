@@ -144,10 +144,10 @@ def label_binarize(y, classes, neg_label=0, pos_label=1, sparse_output=False):
             Y = Y.getcol(-1)
         else:
             Y = Y[:, -1].reshape((-1, 1))
-    # lb_smooth = 1
-    # num_classes = 2
-    # Y[Y == 0] = lb_smooth / num_classes
-    # Y[Y == 1] = 100. + lb_smooth
+    lb_smooth = 0.1
+    num_classes = 227
+    Y[Y == 0] = lb_smooth / num_classes
+    Y[Y == 1] = 1 - lb_smooth
 
     print(Y)
     return Y
