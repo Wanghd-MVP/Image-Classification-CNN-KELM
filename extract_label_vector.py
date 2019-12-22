@@ -44,11 +44,13 @@ def main(is_train = True):
     model = nn.DataParallel(model)
     model.cuda()
     # filename = opt.model+'label_smooth_latest.pth.tar'
-    model_filename = opt.model+'_best.pth.tar'
+    model_filename =  opt.dataset+'_'+opt.model+'_best.pth.tar'
+
+    print(model_filename)
     pth = torch.load(model_filename)
     state_dict = pth['state_dict']
 
-    print(state_dict)
+    # print(state_dict)
     model.load_state_dict(state_dict)
     data = data_loading(opt.dataset,is_train)
     dataloader = DataLoader(data,

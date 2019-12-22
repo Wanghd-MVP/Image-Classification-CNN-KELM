@@ -8,7 +8,8 @@
 
 import torch
 from config import opt
-state = torch.load(opt.model +"_best.pth.tar")
+model_filename =  opt.dataset+'_'+opt.model+'_best.pth.tar'
+state = torch.load(model_filename)
 print(state['epoch'])
 print(state['best_prec1'])
 

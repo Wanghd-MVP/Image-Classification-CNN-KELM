@@ -56,7 +56,7 @@ def main():
     print(acc-state['best_prec1'])
 
 
-def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000):
+def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000,use_label_smooth=True):
     print("开始训练：")
     start = time.time()
     if hidden_layer == 'rbf':
@@ -64,7 +64,11 @@ def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000):
     elif hidden_layer == 'sigmoid':
         siglayer = SimpleRandomHiddenLayer(n_hidden=n_hidden, activation_func='sigmoid')
 
-    clf = ELMClassifier(siglayer)
+    if use_label_smooth:
+        print("use_label_smooth:")
+        clf = ELMClassifierLabelSmooth(siglayer)
+    else:
+        clf = ELMClassifier(siglayer)
     clf.fit(x_train, y_train)
     end = time.time()
     print("训练时间", end - start)
@@ -87,8 +91,30 @@ def kelm_test(clf ,x_test, y_test,prec1 = 0):
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    dir = 'npys/'+opt.dataset+'_'+opt.model
+    # train_filename = dir+'/True.npy'
+    # train_dict = np.load(train_filename).item()
+    # x_train = train_dict['feature']
+    # y_train = train_dict['label']
+    # clf = kelm_train(x_train,y_train,'rbf',1000)
+    # test_filename = dir+'/False.npy'
+    # test_dict = np.load(test_filename).item()
+    # x_test = test_dict['feature']
+    # y_test = test_dict['label']
+    # kelm_test(clf, x_test, y_test,65.75)
 
+
+    train_filename = dir+'/True.npy'
+    train_dict = np.load(train_filename).item()
+    x_train = train_dict['feature']
+    y_train = train_dict['label']
+    clf = kelm_train(x_train,y_train,'rbf',1000,use_label_smooth=False)
+    test_filename = dir+'/False.npy'
+    test_dict = np.load(test_filename).item()
+    x_test = test_dict['feature']
+    y_test = test_dict['label']
+    kelm_test(clf, x_test, y_test,65.75)
     # resnet18  top1(75.4724)
     # n_hidden   gamma   use_examplars  top1                    训练时间
     # 500       1e-5     False          0.7560943557395361    2.686943292617798

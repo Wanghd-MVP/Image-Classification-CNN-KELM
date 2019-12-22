@@ -52,11 +52,12 @@ def main():
     model = nn.DataParallel(model)
     model.cuda()
 
-    filename = opt.dataset+'_'+opt.model.lower()+'/240.pth.tar'
-    pth = torch.load(filename)
-    state_dict = pth['state_dict']
-    start_epoch = pth['epoch']
-    model.load_state_dict(state_dict)
+    start_epoch = opt.start_epoch
+    # filename = opt.dataset+'_'+opt.model.lower()+'/240.pth.tar'
+    # pth = torch.load(filename)
+    # state_dict = pth['state_dict']
+    # start_epoch = pth['epoch']
+    # model.load_state_dict(state_dict)
 
     # Data loading
     if opt.dataset == 'caltech256':
@@ -99,7 +100,7 @@ def main():
         train(train_dataloader,model,criterion,optimizer,epoch)
 
          # evaluate on validation set
-        prec1,testOutput,testFeature,testTarget = validate(val_dataloader,model,criterion)
+        # prec1,testOutput,testFeature,testTarget = validate(val_dataloader,model,criterion)
         prec1 = validate(val_dataloader,model,criterion)
 
         label_kelm_prec1 =0
@@ -128,7 +129,7 @@ def main():
             'model': opt.model,
             'state_dict' : model.state_dict(),
             'best_prec1' : prec1,
-        },is_best,opt.model.lower())
+        },is_best,opt.dataset+'_'+opt.model.lower())
 
         save_everypoint({
             'epoch':epoch + 1,
@@ -361,22 +362,15 @@ def save_checkpoint(state, is_best, filename = 'checkpoint.pth.tar'):
         shutil.copy(filename + '_latest.pth.tar', filename
                     + '_best.pth.tar')
 
-def adjust_learning_rate():
-    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    # lr = opt.lr * (0.1 ** (epoch // 30))
-    print("adjust learning rate")
 
-
-    # for param_group in optimizer.param_groups:
-    #     param_group['lr'] = lr
 
 def adjust_learning_rate(epoch):
 
-    if epoch == 7:
+    if epoch == 30:
+        opt.lr = opt.lr *0.01
+    elif epoch == 100:
         opt.lr = opt.lr *0.1
-    elif epoch == 20:
-        opt.lr = opt.lr *0.1
-    elif epoch == 40:
+    elif epoch == 200:
         opt.lr = opt.lr *0.1
     else:
         print(epoch,opt.lr)

@@ -40,6 +40,7 @@ class DefaultConfig(object):
     num_workers = 4
     print_freq = 10
 
+    start_epoch = 0
     max_epoch = 300
     lr = 0.0001
     lr_decay = 0.01
@@ -47,7 +48,7 @@ class DefaultConfig(object):
     momentum = 0.9
 
     # trick.
-    label_smooth = True
+    label_smooth = False
 
     # learning rate
     is_adjust_learning_rate = False
