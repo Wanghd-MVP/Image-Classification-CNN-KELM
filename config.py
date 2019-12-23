@@ -21,6 +21,8 @@ class DefaultConfig(object):
 
     load_model_path = 'checkpoints/model.pth'
 
+    checkpoint_epochs = 0
+
     #dataset = 'caltech256'
     dataset = 'cifar100'
 
@@ -48,7 +50,7 @@ class DefaultConfig(object):
     momentum = 0.9
 
     # trick.
-    label_smooth = False
+    label_smooth = True
 
     # learning rate
     is_adjust_learning_rate = False
@@ -65,14 +67,16 @@ class DefaultConfig(object):
     feature_kernel = 'rbf'  # rbf or sigmoid
     feature_hidden_node = 1000
 
-    result_file = dataset+'_'+model
+    result = dataset+'_'+model
     if label_smooth:
-        result_file += '_ls_'
+        result += '_ls_'
 
-    result_file += feature_kernel +'_'
-    result_file += str(lr)
-    result_file += str(label_hidden_node)
-    result_file += '.csv'
+    result += feature_kernel +'_'
+    result += str(lr)
+    result += str(label_hidden_node)
+    result_file = result  +'.csv'    # training process
+
+    checkpoints_dir =  result #
     def parse(self,kwargs):
         '''
         based dictionary to update the param of config
@@ -89,5 +93,14 @@ class DefaultConfig(object):
         for k,v in self.__class__.__dict__.items():
             if not k.startswith('__'):
                 print(k, getattr(self, k))
+
+    def output(self):
+        print("model:", self.model)
+        print("dataset:", self.dataset)
+        print('learning_rate:',self.lr)
+        print('lable_smoothing:',self.label_smooth)
+        print('result_file:',self.result_file)
+        print('checkpoint_dir:',self.checkpoints_dir)
+
 
 opt = DefaultConfig()

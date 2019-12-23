@@ -28,9 +28,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0,2'
 best_prec1 = 0
 def main():
     global args, best_prec1
-    print(opt.result_file)
-    print("=>creating model '{}".format(opt.model))
-
+    opt.output()
     if opt.pretrained:
         if opt.model == 'resnet18':
             model = models.resnet18(pretrained=True, num_classes = 1000)
@@ -52,12 +50,13 @@ def main():
     model = nn.DataParallel(model)
     model.cuda()
 
-    start_epoch = opt.start_epoch
-    # filename = opt.dataset+'_'+opt.model.lower()+'/240.pth.tar'
-    # pth = torch.load(filename)
-    # state_dict = pth['state_dict']
-    # start_epoch = pth['epoch']
-    # model.load_state_dict(state_dict)
+    start_epoch = 0
+    if opt.checkpoint_epochs:
+        filename = opt.checkpoints_dir +'/'+str(opt.checkpoint_epochs)+ '.pth.tar'
+        pth = torch.load(filename)
+        state_dict = pth['state_dict']
+        start_epoch = pth['epoch']
+        model.load_state_dict(state_dict)
 
     # Data loading
     if opt.dataset == 'caltech256':
@@ -80,7 +79,7 @@ def main():
 
     # define loss function (criterion) and optimizer
     if opt.label_smooth:
-        criterion = LabelSmoothSoftmaxCEV1(lb_smooth=0.1, lb_ignore=257).cuda()
+        criterion = LabelSmoothSoftmaxCEV1(lb_smooth=0.1, lb_ignore=opt.class_num).cuda()
     else:
         criterion = nn.CrossEntropyLoss().cuda()
     optimizer = torch.optim.SGD(model.parameters(),
@@ -129,14 +128,14 @@ def main():
             'model': opt.model,
             'state_dict' : model.state_dict(),
             'best_prec1' : prec1,
-        },is_best,opt.dataset+'_'+opt.model.lower())
+        },is_best,opt.checkpoints_dir)
 
         save_everypoint({
             'epoch':epoch + 1,
             'model': opt.model,
             'state_dict' : model.state_dict(),
             'best_prec1' : prec1,
-        },opt.dataset+'_'+opt.model.lower(),epoch + 1)
+        },opt.checkpoints_dir,epoch + 1)
 
         write_csv(result,opt.result_file)
 
@@ -228,6 +227,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         #     trainFeature = np.concatenate((trainFeature,feature),axis=0)
 
     # return trainOutput,trainFeature,trainTarget
+
 
 
 
