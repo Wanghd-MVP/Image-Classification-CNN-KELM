@@ -66,5 +66,5 @@ def extract_feature(train = True):
 
 
 if __name__ == '__main__':
-    extract_label_feature(True)   # extract the train label
-    extract_label_feature(False)  # extract the test label
+    extract_feature(train = True)   # extract the train label
+    extract_feature(train = False)  # extract the test label

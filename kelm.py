@@ -92,7 +92,7 @@ def kelm_test(clf ,x_test, y_test,prec1 = 0):
 
 if __name__ == '__main__':
     # main()
-    dir = 'npys/'+opt.dataset+'_'+opt.model
+    dir = 'npys/'+opt.checkpoints_dir
     # train_filename = dir+'/True.npy'
     # train_dict = np.load(train_filename).item()
     # x_train = train_dict['feature']
@@ -105,12 +105,12 @@ if __name__ == '__main__':
     # kelm_test(clf, x_test, y_test,65.75)
 
 
-    train_filename = dir+'/True.npy'
+    train_filename = dir+'/train.npy'
     train_dict = np.load(train_filename).item()
     x_train = train_dict['feature']
     y_train = train_dict['label']
-    clf = kelm_train(x_train,y_train,'rbf',1000,use_label_smooth=False)
-    test_filename = dir+'/False.npy'
+    clf = kelm_train(x_train,y_train,'sigmoid',1000,use_label_smooth=False)
+    test_filename = dir+'/test.npy'
     test_dict = np.load(test_filename).item()
     x_test = test_dict['feature']
     y_test = test_dict['label']
