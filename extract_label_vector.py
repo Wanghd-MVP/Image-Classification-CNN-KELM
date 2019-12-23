@@ -76,17 +76,9 @@ def main(is_train = True):
             trainTarget = target
             trainIstrue = isTrue
         else:
-            # trainOutput = np.append(trainOutput,output[0])
-            # trainTarget = np.append(trainTarget,target[0])
             trainOutput = np.concatenate((trainOutput, output), axis=0)
             trainTarget = np.concatenate((trainTarget, target), axis=0)
             trainIstrue = np.concatenate((trainIstrue, isTrue), axis=0)
-            print(trainOutput.shape)
-            print(trainTarget.shape)
-            print(trainIstrue.shape)
-    print(trainOutput.shape)
-    print(trainTarget.shape)
-
     feature_dict = {}
     feature_dict['feature'] = trainOutput
     feature_dict['label'] = trainTarget

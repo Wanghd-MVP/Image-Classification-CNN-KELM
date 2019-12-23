@@ -12,7 +12,6 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 from config import opt
-from utils import Visualizer
 # import models
 from torchvision import models
 from torchnet import meter
@@ -22,7 +21,7 @@ import shutil
 import time
 import numpy as np
 
-def main(train = True):
+def extract_feature(train = True):
 
     print("------start extract_feature_vector")
     if opt.model == 'resnet18':
@@ -67,5 +66,5 @@ def main(train = True):
 
 
 if __name__ == '__main__':
-    main(True)   # extract the train label
-    main(False)  # extract the test label
+    extract_label_feature(True)   # extract the train label
+    extract_label_feature(False)  # extract the test label

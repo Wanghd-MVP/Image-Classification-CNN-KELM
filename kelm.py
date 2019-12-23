@@ -114,7 +114,12 @@ if __name__ == '__main__':
     test_dict = np.load(test_filename).item()
     x_test = test_dict['feature']
     y_test = test_dict['label']
-    kelm_test(clf, x_test, y_test,65.75)
+
+
+    model_filename =  opt.dataset+'_'+opt.model+'_best.pth.tar'
+
+    state = torch.load(model_filename)
+    kelm_test(clf, x_test, y_test,state['best_prec1'])
     # resnet18  top1(75.4724)
     # n_hidden   gamma   use_examplars  top1                    训练时间
     # 500       1e-5     False          0.7560943557395361    2.686943292617798

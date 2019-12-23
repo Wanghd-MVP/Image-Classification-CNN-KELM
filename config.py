@@ -9,9 +9,9 @@ import warnings
 import torch as t
 class DefaultConfig(object):
     env = 'default'  # the env of visdom
-    # model = 'resnet18'
+    model = 'resnet18'
     # model = 'resnet34'
-    model = 'resnet50'
+    # model = 'resnet50'
     pretrained = False
 
     # dataset path
@@ -21,7 +21,7 @@ class DefaultConfig(object):
 
     load_model_path = 'checkpoints/model.pth'
 
-    checkpoint_epochs = 0
+    checkpoint_epochs = 80
 
     #dataset = 'caltech256'
     dataset = 'cifar100'
@@ -72,7 +72,7 @@ class DefaultConfig(object):
         result += '_ls_'
 
     result += feature_kernel +'_'
-    result += str(lr)
+    result += str(lr)+'_'
     result += str(label_hidden_node)
     result_file = result  +'.csv'    # training process
 
