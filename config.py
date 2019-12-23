@@ -12,7 +12,7 @@ class DefaultConfig(object):
     model = 'resnet18'
     # model = 'resnet34'
     # model = 'resnet50'
-    pretrained = False
+    pretrained = True
 
     # dataset path
     Caltech256_data_root = './data/caltech256/256_ObjectCategories'
@@ -21,10 +21,10 @@ class DefaultConfig(object):
 
     load_model_path = 'checkpoints/model.pth'
 
-    checkpoint_epochs = 80
+    checkpoint_epochs = 0
 
-    #dataset = 'caltech256'
-    dataset = 'cifar100'
+    dataset = 'caltech256'
+    # dataset = 'cifar100'
 
     if dataset == 'caltech256':
         data_root = Caltech256_data_root
@@ -36,8 +36,8 @@ class DefaultConfig(object):
     else:
         pass
     # cnn config
-    train_batch_size = 128
-    test_batch_size = 128
+    train_batch_size = 32
+    test_batch_size = 32
     use_gpu = True
     num_workers = 4
     print_freq = 10
@@ -69,9 +69,9 @@ class DefaultConfig(object):
 
     result = dataset+'_'+model
     if label_smooth:
-        result += '_ls_'
+        result += '_ls'
 
-    result += feature_kernel +'_'
+    result += '_'+feature_kernel +'_'
     result += str(lr)+'_'
     result += str(label_hidden_node)
     result_file = result  +'.csv'    # training process

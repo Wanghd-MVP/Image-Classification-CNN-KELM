@@ -62,42 +62,49 @@ def extract_label_feature(is_train = True):
     # switch to evaluate mode
     model.eval()
 
-    trainOutput = []
-    trainTarget = []
-
+    train_label_output = []
+    train_feature_output = []
+    train_target = []
+    train_istrue = []
     for i, (input, target) in enumerate(dataloader):
         target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input, volatile=True).cuda()
         # compute output
-        output = model(input_var).cpu().detach().numpy()
-        isTrue = output.argmax(axis=1) == target
 
-        if len(trainOutput)==0:
-            trainOutput = output
-            trainTarget = target
-            trainIstrue = isTrue
+        # extract label feature
+        label_output = model(input_var).cpu().detach().numpy()
+        isTrue = label_output.argmax(axis=1) == target
+
+        # extract feature
+        remove_fc_model = nn.Sequential(*list(model.children())[:-1])
+        feature_output = remove_fc_model(input_var).cpu().detach().numpy()
+        feature_output = feature_output.reshape(input.size(0), -1)
+
+        if len(train_label_output)==0:
+            train_label_output = label_output
+            train_feature_output = feature_output
+            train_target = target
+            train_istrue = isTrue
         else:
-            trainOutput = np.concatenate((trainOutput, output), axis=0)
-            trainTarget = np.concatenate((trainTarget, target), axis=0)
-            trainIstrue = np.concatenate((trainIstrue, isTrue), axis=0)
+            train_label_output = np.concatenate((train_label_output, label_output), axis=0)
+            train_feature_output = np.concatenate((train_feature_output,feature_output),axis=0)
+            train_target = np.concatenate((train_target, target), axis=0)
+            train_istrue = np.concatenate((train_istrue, isTrue), axis=0)
+
     feature_dict = {}
-    feature_dict['feature'] = trainOutput
-    feature_dict['label'] = trainTarget
-    feature_dict['is_true'] = trainIstrue
-    # save_dir = opt.dataset+'_'+opt.model
-    # save_filename = save_dir+'/'+str(is_train)+'.npy'
-    # if not os.path.exists('npys/'+save_dir):
-    #     os.makedirs('npys/'+save_dir)
-    # np.save('npys/'+save_filename,feature_dict)
+    feature_dict['label'] = train_label_output
+    feature_dict['feature'] = train_feature_output
+    feature_dict['target'] = train_target
+    feature_dict['is_true'] = train_istrue
+
     save_npy(feature_dict,'npys/'+opt.checkpoints_dir,is_train)
     print('----------end-------------')
-    # np.save('npys/trainfeature_select3_7.npy',feature_dict)
 
 def data_loading(dataset='caltech256', is_train = True):
         # Data loading
-    if opt.dataset == 'caltech256':
+    if dataset == 'caltech256':
         return Caltech256(opt.data_root, train=is_train)
-    elif opt.dataset == 'cifar100':
+    elif dataset == 'cifar100':
         return CIFAR100(opt.data_root, train=is_train)
 
 

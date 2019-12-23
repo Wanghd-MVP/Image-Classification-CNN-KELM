@@ -59,7 +59,6 @@ def extract_feature(train = True):
         remove_fc_model = nn.Sequential(*list(model.children())[:-1])
         feature = remove_fc_model(input_var).cpu().detach().numpy()
         feature = feature.reshape(input.size(0), -1)
-        print(i)
         if not os.path.exists(dir):
             os.makedirs(dir)
         np.savez(dir+"/feature_enc_{}".format(i), feature,target)

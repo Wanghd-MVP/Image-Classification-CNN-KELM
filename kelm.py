@@ -16,44 +16,6 @@ import numpy as np
 from ELMClassifier.label_smoothing_elm import ELMClassifierLabelSmooth
 from config import opt
 import torch
-def main():
-    n_hidden = 1000
-    hidden_layer = 'rbf'  # or linear
-
-    train_dict = np.load('npys/' + opt.model + '_label/train.npy').item()
-    x_train = train_dict['feature']
-
-    y_train = train_dict['label']
-    test_dict = np.load('npys/'+opt.model+'_label/test.npy').item()
-    x_test, y_test = test_dict['feature'],test_dict['label']
-    print("开始训练：")
-    start = time.time()
-
-    if hidden_layer == 'rbf':
-        siglayer = RBFRandomHiddenLayer(n_hidden=n_hidden, gamma=1e-4, use_exemplars=False)
-    else:
-        siglayer = SimpleRandomHiddenLayer(n_hidden=n_hidden, activation_func='sigmoid')
-
-    clf = ELMClassifier(siglayer)
-    clf.fit(x_train,y_train)
-    joblib.dump(clf,'./KELM/'+opt.model+'_KELM_'+str(n_hidden)+'.pkl')
-    end = time.time()
-    print("训练时间",end-start)
-
-    print("开始测试：")
-    start = time.time()
-    clf1 = joblib.load('./KELM/'+opt.model+'_KELM_'+str(n_hidden)+'.pkl')
-    pre_result = clf1.predict(x_test)
-    end = time.time()
-    print("测试时间", end - start)
-    isTrue = pre_result==y_test
-    acc = np.sum(isTrue == True) / pre_result.size *100
-    print(acc)
-
-
-    state = torch.load(opt.model + "label_smooth_latest.pth.tar")
-    print("promotion:")
-    print(acc-state['best_prec1'])
 
 
 def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000,use_label_smooth=True):
@@ -88,38 +50,44 @@ def kelm_test(clf ,x_test, y_test,prec1 = 0):
     print('提升',acc - prec1)
     return acc
 
+def read_npys(filename):
+    dict = np.load(filename).item()
+    label = dict['label']
+    feature = dict['feature']
+    target = dict['target']
+    return label,feature,target
 
+
+def get_perc1():
+    model_filename = opt.checkpoints_dir + '_best.pth.tar'
+    state = torch.load(model_filename)
+    return state['best_prec1']
 
 if __name__ == '__main__':
     # main()
+    print(opt.model+'____'+opt.dataset)
     dir = 'npys/'+opt.checkpoints_dir
-    # train_filename = dir+'/True.npy'
-    # train_dict = np.load(train_filename).item()
-    # x_train = train_dict['feature']
-    # y_train = train_dict['label']
-    # clf = kelm_train(x_train,y_train,'rbf',1000)
-    # test_filename = dir+'/False.npy'
-    # test_dict = np.load(test_filename).item()
-    # x_test = test_dict['feature']
-    # y_test = test_dict['label']
-    # kelm_test(clf, x_test, y_test,65.75)
-
-
     train_filename = dir+'/train.npy'
-    train_dict = np.load(train_filename).item()
-    x_train = train_dict['feature']
-    y_train = train_dict['label']
-    clf = kelm_train(x_train,y_train,'sigmoid',1000,use_label_smooth=False)
-    test_filename = dir+'/test.npy'
-    test_dict = np.load(test_filename).item()
-    x_test = test_dict['feature']
-    y_test = test_dict['label']
+    test_filename = dir + '/test.npy'
+
+    label_train,feature_train,target_train = read_npys(train_filename)
+    label_test, feature_test, target_test = read_npys(test_filename)
+
+    prec1 = get_perc1()
 
 
-    model_filename =  opt.dataset+'_'+opt.model+'_best.pth.tar'
+    # # label elm
+    # print('label based')
+    # label_clf = kelm_train(label_train,target_train,'rbf',1000,use_label_smooth=False)
+    # kelm_test(label_clf, label_test, target_test, prec1)
 
-    state = torch.load(model_filename)
-    kelm_test(clf, x_test, y_test,state['best_prec1'])
+    # feature elm
+    print('feature based')
+    feature_clf =kelm_train(feature_train,target_train,'rbf',1000,use_label_smooth=False)
+    kelm_test(feature_clf,feature_test,target_test,prec1)
+
+
+
     # resnet18  top1(75.4724)
     # n_hidden   gamma   use_examplars  top1                    训练时间
     # 500       1e-5     False          0.7560943557395361    2.686943292617798
@@ -168,3 +136,4 @@ if __name__ == '__main__':
     # 4500 sigmoid 0.741638741047375
     # 4500
     # clf1 = ELMClassifierLabelSmooth(siglayer1)
+

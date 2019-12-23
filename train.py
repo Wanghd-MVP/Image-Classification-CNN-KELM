@@ -35,7 +35,7 @@ def main():
         elif opt.model == 'resnet34':
             model = models.resnet34(pretrained=True, num_classes = 1000)
         elif opt.model == 'resnet50':
-            model = models.resnet50(pretrained=False, num_classes=1000)
+            model = models.resnet50(pretrained=True, num_classes=1000)
     else:
         from models import ResNet
         if opt.model == 'resnet18':
