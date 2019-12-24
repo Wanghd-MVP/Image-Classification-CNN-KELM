@@ -24,7 +24,7 @@ import numpy as np
 from kelm import *
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,2'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '0,2'
 best_prec1 = 0
 def main():
     global args, best_prec1
@@ -47,7 +47,7 @@ def main():
     num_features = model.fc.in_features
     model.fc = nn.Linear(num_features, opt.class_num)
 
-    model = nn.DataParallel(model)
+    # model = nn.DataParallel(model)
     model.cuda()
 
     start_epoch = 0
@@ -89,7 +89,7 @@ def main():
 
 
     result = []
-    for epoch in range(start_epoch+1,opt.max_epoch):
+    for epoch in range(start_epoch,opt.max_epoch):
 
         if opt.is_adjust_learning_rate:
             adjust_learning_rate(epoch)
@@ -366,8 +366,8 @@ def save_checkpoint(state, is_best, filename = 'checkpoint.pth.tar'):
 
 def adjust_learning_rate(epoch):
 
-    if epoch == 30:
-        opt.lr = opt.lr *0.01
+    if epoch == 25:
+        opt.lr = opt.lr *0.1
     elif epoch == 100:
         opt.lr = opt.lr *0.1
     elif epoch == 200:

@@ -20,12 +20,13 @@ from torch.utils.data import DataLoader
 import shutil
 import time
 import numpy as np
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,2'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '0,2'
 
 def extract_label_feature(is_train = True):
 
     print("------start extract_label_vector------")
     if opt.dataset == 'caltech256':
+        print("1")
         if opt.model == 'resnet18':
             model = models.resnet18(pretrained=False, num_classes = 1000)
         if opt.model == 'resnet50':
@@ -33,6 +34,7 @@ def extract_label_feature(is_train = True):
         if opt.model == 'resnet34':
             model = models.resnet34(pretrained=False, num_classes = 1000)
     elif opt.dataset == 'cifar100':
+        print("2")
         from models import ResNet
         if opt.model == 'resnet18':
             model = ResNet.resnet18()
@@ -42,7 +44,7 @@ def extract_label_feature(is_train = True):
             model = ResNet.resnet50()
     num_features = model.fc.in_features
     model.fc = nn.Linear(num_features, opt.class_num)
-    model = nn.DataParallel(model)
+    # model = nn.DataParallel(model)
     model.cuda()
     # filename = opt.model+'label_smooth_latest.pth.tar'
     model_filename =  opt.checkpoints_dir+'_best.pth.tar'
@@ -67,6 +69,7 @@ def extract_label_feature(is_train = True):
     train_target = []
     train_istrue = []
     for i, (input, target) in enumerate(dataloader):
+        print(i)
         target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input, volatile=True).cuda()
         # compute output
@@ -80,6 +83,7 @@ def extract_label_feature(is_train = True):
         feature_output = remove_fc_model(input_var).cpu().detach().numpy()
         feature_output = feature_output.reshape(input.size(0), -1)
 
+
         if len(train_label_output)==0:
             train_label_output = label_output
             train_feature_output = feature_output
@@ -92,6 +96,11 @@ def extract_label_feature(is_train = True):
             train_istrue = np.concatenate((train_istrue, isTrue), axis=0)
 
     feature_dict = {}
+    print(train_label_output.shape)
+    print(train_feature_output)
+    print(train_target)
+    print(train_istrue)
+
     feature_dict['label'] = train_label_output
     feature_dict['feature'] = train_feature_output
     feature_dict['target'] = train_target

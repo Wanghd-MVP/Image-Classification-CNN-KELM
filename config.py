@@ -21,7 +21,7 @@ class DefaultConfig(object):
 
     load_model_path = 'checkpoints/model.pth'
 
-    checkpoint_epochs = 0
+
 
     dataset = 'caltech256'
     # dataset = 'cifar100'
@@ -42,8 +42,9 @@ class DefaultConfig(object):
     num_workers = 4
     print_freq = 10
 
-    start_epoch = 0
-    max_epoch = 300
+    # start_epoch = 49
+    checkpoint_epochs = 0
+    max_epoch = 100
     lr = 0.0001
     lr_decay = 0.01
     weight_decay = 0.01    # 权重衰减
