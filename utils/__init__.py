@@ -20,6 +20,9 @@ def init_model(opt):
             model = models.vgg19(pretrained=True, num_classes=1000)
         elif opt.model == 'vgg19_bn':
             model = models.vgg19_bn(pretrained=True,num_classes=1000)
+        elif opt.model == 'densenet121':
+            model = models.densenet121(pretrained=True)
+            # model = models.densenet121(pretrained=True,num_classes=1000)
     else:
         from models import ResNet
         if opt.model == 'resnet18':

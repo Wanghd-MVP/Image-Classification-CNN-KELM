@@ -19,10 +19,10 @@ import torch
 
 
 def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000,use_label_smooth=True):
-    print("开始训练：")
+    print("     开始训练：")
     start = time.time()
     if hidden_layer == 'rbf':
-        siglayer = RBFRandomHiddenLayer(n_hidden=n_hidden, gamma=1e-5, use_exemplars=False)
+        siglayer = RBFRandomHiddenLayer(n_hidden=n_hidden, gamma=1e-4, use_exemplars=False)
     elif hidden_layer == 'sigmoid':
         siglayer = SimpleRandomHiddenLayer(n_hidden=n_hidden, activation_func='sigmoid')
 
@@ -33,23 +33,23 @@ def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000,use_label_smoo
         clf = ELMClassifier(siglayer)
     clf.fit(x_train, y_train)
     end = time.time()
-    print("训练时间", end - start)
+    print("     训练时间", end - start)
     return clf
     # joblib.dump(clf, './KELM/·' + opt.model + '_KELM_' + str(n_hidden) + '.pkl')
 
 
 def kelm_test(clf ,x_test, y_test,prec1 = 0):
-    print("开始测试：")
+    print("     开始测试：")
     start = time.time()
-    print(x_test.shape)
+    # print(x_test.shape)
     pre_result = clf.predict(x_test)
     end = time.time()
-    print("测试时间", end - start)
+    print("     测试时间", end - start)
     isTrue = pre_result == y_test
-    print(pre_result.size)
+    # print(pre_result.size)
     acc = np.sum(isTrue == True) / pre_result.size * 100
-    print('精确度',acc)
-    print('提升',acc - prec1)
+    print('     精确度',acc)
+    print('     提升',acc - prec1)
     return acc
 
 def read_npys(filename):
@@ -75,22 +75,16 @@ if __name__ == '__main__':
     label_train,feature_train,target_train = read_npys(train_filename)
     label_test, feature_test, target_test = read_npys(test_filename)
 
-
-    # feature_train,target_train = read_npys(train_filename)
-    # feature_test, target_test = read_npys(test_filename)
-
-
     prec1 = get_perc1()
     print('原本精确度：',prec1)
 
-
     # label elm
-    print('label based')
+    print('label based:')
     label_clf = kelm_train(label_train,target_train,'rbf',1000,use_label_smooth=False)
     kelm_test(label_clf, label_test, target_test, prec1)
 
     # feature elm
-    print('feature based')
+    print('feature based:')
     feature_clf =kelm_train(feature_train,target_train,'rbf',1000,use_label_smooth=False)
     kelm_test(feature_clf,feature_test,target_test,prec1)
 

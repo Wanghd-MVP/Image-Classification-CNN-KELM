@@ -9,11 +9,12 @@ import warnings
 import torch as t
 class DefaultConfig(object):
     env = 'default'  # the env of visdom
-    model = 'vgg19'
-    model = 'vgg19_bn'
+    # model = 'vgg19'
+    # model = 'vgg19_bn'
     # model = 'resnet18'
     # model = 'resnet34'
     # model = 'resnet50'
+    model = 'densenet121'
     pretrained = True
 
     # dataset path

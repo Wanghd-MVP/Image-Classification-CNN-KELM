@@ -64,7 +64,7 @@ def extract_label_feature(is_train = True):
         label_output = model(input_var).cpu().detach().numpy()
         isTrue = label_output.argmax(axis=1) == target
 
-        if opt.model == 'VGG19':
+        if opt.model[:5] == 'vgg19':
             # remove_fc_model = nn.Sequential(*list(model.children())[:-1])
             # num_features = model.classifier[-1].in_features
             remove_fc_model = copy.deepcopy(model)
