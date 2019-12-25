@@ -24,7 +24,7 @@ import numpy as np
 from kelm import *
 
 
-# os.environ['CUDA_VISIBLE_DEVICES'] = '0,2'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 best_prec1 = 0
 def main():
     global args, best_prec1
@@ -35,7 +35,9 @@ def main():
         elif opt.model == 'resnet34':
             model = models.resnet34(pretrained=True, num_classes = 1000)
         elif opt.model == 'resnet50':
-            model = models.resnet50(pretrained=True, num_classes=1000)
+            model = models.resnet50(pretrained=True, num_classes = 1000)
+        elif opt.model == 'VGG19':
+            model = models.vgg19(pretrained=True,num_classes= 1000)
     else:
         from models import ResNet
         if opt.model == 'resnet18':
@@ -44,8 +46,15 @@ def main():
             model = ResNet.resnet34()
         elif opt.model == 'resnet50':
             model = ResNet.resnet50()
-    num_features = model.fc.in_features
-    model.fc = nn.Linear(num_features, opt.class_num)
+    # num_features = model.fc.in_features
+    # model.fc = nn.Linear(num_features, opt.class_num)
+    if opt.model == 'VGG19':
+        num_features = model.classifier[-1].in_features
+        model.classifier[-1] = nn.Linear(num_features, opt.class_num+1)
+
+    else:
+        num_features = model.fc.in_features
+        model.fc = nn.Linear(num_features, opt.class_num)
 
     # model = nn.DataParallel(model)
     model.cuda()
@@ -130,12 +139,12 @@ def main():
             'best_prec1' : prec1,
         },is_best,opt.checkpoints_dir)
 
-        save_everypoint({
-            'epoch':epoch + 1,
-            'model': opt.model,
-            'state_dict' : model.state_dict(),
-            'best_prec1' : prec1,
-        },opt.checkpoints_dir,epoch + 1)
+        # save_everypoint({
+        #     'epoch':epoch + 1,
+        #     'model': opt.model,
+        #     'state_dict' : model.state_dict(),
+        #     'best_prec1' : prec1,
+        # },opt.checkpoints_dir,epoch + 1)
 
         write_csv(result,opt.result_file)
 

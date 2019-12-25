@@ -9,7 +9,8 @@ import warnings
 import torch as t
 class DefaultConfig(object):
     env = 'default'  # the env of visdom
-    model = 'resnet18'
+    model = 'VGG19'
+    # model = 'resnet18'
     # model = 'resnet34'
     # model = 'resnet50'
     pretrained = True
@@ -28,7 +29,7 @@ class DefaultConfig(object):
 
     if dataset == 'caltech256':
         data_root = Caltech256_data_root
-        class_num = 256
+        class_num = 257
 
     elif dataset == 'cifar100':
         data_root = Cifar100_data_root

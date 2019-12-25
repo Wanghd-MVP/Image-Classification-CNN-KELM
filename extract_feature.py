@@ -51,6 +51,8 @@ def extract_feature(is_train = True):
             model = ResNet.resnet34()
         elif opt.model == 'resnet50':
             model = ResNet.resnet50()
+
+
     num_features = model.fc.in_features
     model.fc = nn.Linear(num_features, opt.class_num)
 

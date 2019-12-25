@@ -5,6 +5,7 @@
 # @Site : 
 # @File : extract_label_vector.py
 # @Software: PyCharm
+import copy
 
 import os
 import torch
@@ -20,30 +21,15 @@ from torch.utils.data import DataLoader
 import shutil
 import time
 import numpy as np
+
+from utils import init_model
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0,2'
 
 def extract_label_feature(is_train = True):
 
     print("------start extract_label_vector------")
-    if opt.dataset == 'caltech256':
-        print("1")
-        if opt.model == 'resnet18':
-            model = models.resnet18(pretrained=False, num_classes = 1000)
-        if opt.model == 'resnet50':
-            model = models.resnet50(pretrained=False, num_classes = 1000)
-        if opt.model == 'resnet34':
-            model = models.resnet34(pretrained=False, num_classes = 1000)
-    elif opt.dataset == 'cifar100':
-        print("2")
-        from models import ResNet
-        if opt.model == 'resnet18':
-            model = ResNet.resnet18()
-        elif opt.model == 'resnet34':
-            model = ResNet.resnet34()
-        elif opt.model == 'resnet50':
-            model = ResNet.resnet50()
-    num_features = model.fc.in_features
-    model.fc = nn.Linear(num_features, opt.class_num)
+
+    model = init_model(opt)
     # model = nn.DataParallel(model)
     model.cuda()
     # filename = opt.model+'label_smooth_latest.pth.tar'
@@ -78,11 +64,23 @@ def extract_label_feature(is_train = True):
         label_output = model(input_var).cpu().detach().numpy()
         isTrue = label_output.argmax(axis=1) == target
 
+        if opt.model == 'VGG19':
+            # remove_fc_model = nn.Sequential(*list(model.children())[:-1])
+            # num_features = model.classifier[-1].in_features
+            remove_fc_model = copy.deepcopy(model)
+            # model.classifier[-1] = nn.Linear(num_features, opt.class_num)
+            # remove_fc_model = model
+            remove_fc_model.classifier = remove_fc_model.classifier[:-1]
+            feature_output = remove_fc_model(input_var).cpu().detach().numpy()
+            feature_output = feature_output.reshape(input.size(0), -1)
+            print("--------")
+            print(feature_output.shape)
+        else:
         # extract feature
-        remove_fc_model = nn.Sequential(*list(model.children())[:-1])
-        feature_output = remove_fc_model(input_var).cpu().detach().numpy()
-        feature_output = feature_output.reshape(input.size(0), -1)
-
+            remove_fc_model = nn.Sequential(*list(model.children())[:-1])
+            feature_output = remove_fc_model(input_var).cpu().detach().numpy()
+            feature_output = feature_output.reshape(input.size(0), -1)
+            print(feature_output.shape)
 
         if len(train_label_output)==0:
             train_label_output = label_output
