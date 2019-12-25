@@ -8,7 +8,7 @@
 
 import torch
 from config import opt
-model_filename =  opt.checkpoints_dir+'_best.pth.tar'
+model_filename =  opt.checkpoints_dir+'_latest.pth.tar'
 state = torch.load(model_filename)
 print(state['epoch'])
 print(state['best_prec1'])

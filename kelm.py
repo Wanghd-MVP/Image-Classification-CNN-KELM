@@ -22,7 +22,7 @@ def kelm_train(x_train,y_train,hidden_layer='rbf',n_hidden = 1000,use_label_smoo
     print("开始训练：")
     start = time.time()
     if hidden_layer == 'rbf':
-        siglayer = RBFRandomHiddenLayer(n_hidden=n_hidden, gamma=1e-4, use_exemplars=False)
+        siglayer = RBFRandomHiddenLayer(n_hidden=n_hidden, gamma=1e-5, use_exemplars=False)
     elif hidden_layer == 'sigmoid':
         siglayer = SimpleRandomHiddenLayer(n_hidden=n_hidden, activation_func='sigmoid')
 

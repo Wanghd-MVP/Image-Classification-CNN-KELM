@@ -16,8 +16,10 @@ def init_model(opt):
             model = models.resnet34(pretrained=True, num_classes=1000)
         elif opt.model == 'resnet50':
             model = models.resnet50(pretrained=True, num_classes=1000)
-        elif opt.model == 'VGG19':
+        elif opt.model == 'vgg19':
             model = models.vgg19(pretrained=True, num_classes=1000)
+        elif opt.model == 'vgg19_bn':
+            model = models.vgg19_bn(pretrained=True,num_classes=1000)
     else:
         from models import ResNet
         if opt.model == 'resnet18':
@@ -26,7 +28,8 @@ def init_model(opt):
             model = ResNet.resnet34()
         elif opt.model == 'resnet50':
             model = ResNet.resnet50()
-    if opt.model == 'VGG19':
+    print(opt.model[:5])
+    if opt.model[:5] == 'vgg19':
         num_features = model.classifier[-1].in_features
         model.classifier[-1] = nn.Linear(num_features, opt.class_num)
 
