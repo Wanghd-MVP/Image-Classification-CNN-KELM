@@ -13,9 +13,8 @@ class DefaultConfig(object):
     # model = 'vgg19_bn'
     # model = 'resnet18'
     # model = 'resnet34'
-    # model = 'resnet50'
-    model = 'densenet121'
-    pretrained = True
+    model = 'resnet50'
+    # model = 'densenet121'
 
     # dataset path
     Caltech256_data_root = './data/caltech256/256_ObjectCategories'
@@ -30,23 +29,29 @@ class DefaultConfig(object):
     # dataset = 'cifar100'
 
     if dataset == 'caltech256':
+        pretrained = True
         data_root = Caltech256_data_root
         class_num = 257
+        train_batch_size = 32
+        test_batch_size = 32
+        print("---------")
 
     elif dataset == 'cifar100':
+        pretrained = False
         data_root = Cifar100_data_root
         class_num = 101
+        train_batch_size = 128
+        test_batch_size = 128
     else:
         pass
     # cnn config
-    train_batch_size = 32
-    test_batch_size = 32
+
     use_gpu = True
     num_workers = 4
     print_freq = 10
 
     # start_epoch = 49
-    checkpoint_epochs = 0
+    checkpoint = False
     max_epoch = 100
     lr = 0.0001
     lr_decay = 0.01
@@ -54,7 +59,7 @@ class DefaultConfig(object):
     momentum = 0.9
 
     # trick.
-    label_smooth = True
+    label_smooth = False
 
     # learning rate
     is_adjust_learning_rate = False
@@ -72,7 +77,7 @@ class DefaultConfig(object):
     feature_hidden_node = 1000
 
     result = dataset+'_'+model
-    if label_smooth:
+    if  label_smooth:
         result += '_ls'
 
     result += '_'+feature_kernel +'_'
