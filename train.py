@@ -13,6 +13,7 @@ from tqdm import tqdm
 from LossFunction.label_smoothing import LabelSmoothSoftmaxCEV1
 from config import opt
 # import models
+from torchvision import datasets
 from torchvision import models
 from torchnet import meter
 from data.dataset import Caltech256
@@ -23,8 +24,9 @@ import time
 import numpy as np
 from kelm import *
 from utils import init_model
+import torchvision.transforms as transforms
 
-# os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 best_prec1 = 0
 def main():
     global args, best_prec1
@@ -35,12 +37,18 @@ def main():
     model.cuda()
 
     start_epoch = 0
-    if opt.checkpoint_epochs:
-        filename = opt.checkpoints_dir +'/'+str(opt.checkpoint_epochs)+ '.pth.tar'
+    if opt.checkpoint:
+        print("checkpoints")
+        # filename = opt.checkpoints_dir +'/'+str(opt.checkpoint_epochs)+ '.pth.tar'
+        filename = opt.checkpoints_dir+'_latest.pth.tar'
         pth = torch.load(filename)
         state_dict = pth['state_dict']
         start_epoch = pth['epoch']
+        print(start_epoch)
         model.load_state_dict(state_dict)
+
+    datasets.CIFAR10
+
 
     # Data loading
     if opt.dataset == 'caltech256':
@@ -50,7 +58,20 @@ def main():
         train_data = CIFAR100(opt.data_root, train=True)
         val_data = CIFAR100(opt.data_root, train=False)
 
+    elif opt.dataset == 'cifar10':
+        transform_train = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
 
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
+        train_data = datasets.CIFAR10(root=opt.data_root, train=True, download=False, transform=transform_train)
+        val_data = datasets.CIFAR10(root=opt.data_root, train=False, download=False, transform=transform_test)
     train_dataloader = DataLoader(train_data,
                                   batch_size=opt.train_batch_size,
                                   shuffle=True,
@@ -60,6 +81,7 @@ def main():
                                 shuffle=False,
                                 num_workers=opt.num_workers,
                                 pin_memory=True)
+
 
     # define loss function (criterion) and optimizer
     if opt.label_smooth:
@@ -350,12 +372,12 @@ def save_checkpoint(state, is_best, filename = 'checkpoint.pth.tar'):
 
 def adjust_learning_rate(epoch):
 
-    if epoch == 25:
+    if epoch == 100:
         opt.lr = opt.lr *0.1
-    elif epoch == 100:
-        opt.lr = opt.lr *0.1
-    elif epoch == 200:
-        opt.lr = opt.lr *0.1
+    elif epoch == 600:
+        opt.lr = opt.lr *0.5
+    elif epoch == 1000:
+        opt.lr = opt.lr *0.5
     else:
         print(epoch,opt.lr)
 

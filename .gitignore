@@ -1,6 +1,7 @@
 *.pyc
 /data/caltech256/*
 /data/cifar-100-python/*
+/dada/cifar-10-batches-py/*
 ./idea/
 .DS_Store
 .idea/*

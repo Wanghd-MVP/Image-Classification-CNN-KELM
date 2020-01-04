@@ -21,12 +21,15 @@ class DefaultConfig(object):
     # CIFAR-100
     Cifar100_data_root = './data/cifar-100-python'
 
+    Cifar10_data_root = './data'
+
     load_model_path = 'checkpoints/model.pth'
 
 
 
-    dataset = 'caltech256'
-    # dataset = 'cifar100'
+    # dataset = 'caltech256'
+    dataset = 'cifar100'
+    dataset = 'cifar10'
 
     if dataset == 'caltech256':
         pretrained = True
@@ -42,6 +45,12 @@ class DefaultConfig(object):
         class_num = 101
         train_batch_size = 128
         test_batch_size = 128
+    elif dataset == 'cifar10':
+        pretrained = False
+        data_root = Cifar10_data_root
+        class_num = 11
+        train_batch_size = 128
+        test_batch_size = 128
     else:
         pass
     # cnn config
@@ -52,21 +61,21 @@ class DefaultConfig(object):
 
     # start_epoch = 49
     checkpoint = False
-    max_epoch = 100
-    lr = 0.0001
+    max_epoch = 1000
+    lr = 0.001
     lr_decay = 0.01
     weight_decay = 0.01    # 权重衰减
     momentum = 0.9
 
     # trick.
-    label_smooth = False
+    label_smooth = True
 
     # learning rate
-    is_adjust_learning_rate = False
+    is_adjust_learning_rate = True
 
 
     #  是否需要label  elm
-    is_label_elm = False
+    is_label_elm = True
     label_kernel = 'rbf'
     label_hidden_node = 1000
 

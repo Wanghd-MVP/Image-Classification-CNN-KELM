@@ -6,12 +6,18 @@
 # @File : dataset.py
 # @Software: PyCharm
 
-import os
 from PIL import Image
 from torch.utils import data
 import numpy as np
 from torchvision import transforms as T
 from config import opt
+import os
+import pickle
+
+
+import numpy
+from torch.utils.data import Dataset
+
 class Caltech256(data.Dataset):
 
     def __init__(self,root, transforms = None, train= True):
@@ -77,12 +83,6 @@ class Caltech256(data.Dataset):
         return len(self.imgs)
 
 
-import os
-import pickle
-
-
-import numpy
-from torch.utils.data import Dataset
 
 class CIFAR100(Dataset):
     """cifar100 test dataset, derived from
@@ -129,6 +129,10 @@ class CIFAR100(Dataset):
         if self.transforms:
             image = self.transforms(image)
         return image,label
+
+
+class CIFAR10(Dataset):
+    pass
 
 
 

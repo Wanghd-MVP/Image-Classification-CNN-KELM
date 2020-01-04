@@ -80,7 +80,10 @@ if __name__ == '__main__':
 
     # label elm
     print('label based:')
-    label_clf = kelm_train(label_train,target_train,'rbf',1000,use_label_smooth=False)
+    # label_clf = kelm_train(label_train,target_train,'sigmoid',1000,use_label_smooth=False)
+    # kelm_test(label_clf, label_test, target_test, prec1)
+
+    label_clf = kelm_train(label_train, target_train, 'rbf', 1000, use_label_smooth=False)
     kelm_test(label_clf, label_test, target_test, prec1)
 
     # feature elm

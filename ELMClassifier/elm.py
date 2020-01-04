@@ -351,6 +351,7 @@ class ELMClassifier(BaseELM, ClassifierMixin):
             Predicted values.
         """
         raw_predictions = self.decision_function(X)
+        print(raw_predictions)
         class_predictions = self.binarizer_.inverse_transform(raw_predictions)
 
         return class_predictions

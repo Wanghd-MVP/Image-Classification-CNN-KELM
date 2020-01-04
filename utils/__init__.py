@@ -35,7 +35,9 @@ def init_model(opt):
     if opt.model[:5] == 'vgg19':
         num_features = model.classifier[-1].in_features
         model.classifier[-1] = nn.Linear(num_features, opt.class_num)
-
+    elif opt.model[:8] == 'densenet':
+        num_features = model.classifier.in_features
+        model.classifier = nn.Linear(num_features, opt.class_num)  # 这两句重新拟合模型分类
     else:
         num_features = model.fc.in_features
         model.fc = nn.Linear(num_features, opt.class_num)
