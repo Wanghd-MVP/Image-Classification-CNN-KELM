@@ -42,15 +42,31 @@ def kelm_test(clf ,x_test, y_test,prec1 = 0):
     print("     开始测试：")
     start = time.time()
     # print(x_test.shape)
-    pre_result = clf.predict(x_test)
+    top1,top5 = clf.predict(x_test)
+
+
+
     end = time.time()
     print("     测试时间", end - start)
-    isTrue = pre_result == y_test
-    # print(pre_result.size)
-    acc = np.sum(isTrue == True) / pre_result.size * 100
-    print('     精确度',acc)
-    print('     提升',acc - prec1)
-    return acc
+    # isTrue = top1 == y_test
+    # # print(pre_result.size)
+    # acc = np.sum(isTrue == True) / top1.size * 100
+
+    top1acc = top1_acc(top1, y_test)
+    top5acc = top5_acc(top5, y_test)
+    print('     top1精确度:',top1acc)
+    print('     top5精确度：',top5acc)
+    print('     提升',top1acc - prec1)
+
+def top5_acc(top5,target):
+    y_test_ = target.reshape(-1, 1)
+    top5_is_true = y_test_ == top5
+    return np.sum(top5_is_true == True) / target.size * 100
+
+def top1_acc(top1,target):
+    isTrue = top1 == target
+    return np.sum(isTrue == True) / target.size * 100
+
 
 def read_npys(filename):
     dict = np.load(filename).item()
@@ -82,6 +98,10 @@ if __name__ == '__main__':
     print('label based:')
     # label_clf = kelm_train(label_train,target_train,'sigmoid',1000,use_label_smooth=False)
     # kelm_test(label_clf, label_test, target_test, prec1)
+
+    label_clf = kelm_train(label_train, target_train, 'sigmoid', 1000, use_label_smooth=False)
+    print('--------------------------------------------')
+    kelm_test(label_clf, label_test, target_test, prec1)
 
     label_clf = kelm_train(label_train, target_train, 'rbf', 1000, use_label_smooth=False)
     kelm_test(label_clf, label_test, target_test, prec1)

@@ -130,9 +130,25 @@ class CIFAR100(Dataset):
             image = self.transforms(image)
         return image,label
 
+from torchvision import datasets
 
-class CIFAR10(Dataset):
-    pass
+def CIFAR10(path, transforms=None, train=True):
+
+    transform_train = T.Compose([
+        T.RandomCrop(32, padding=4),
+        T.RandomHorizontalFlip(),
+        T.ToTensor(),
+        T.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
+
+    transform_test = T.Compose([
+        T.ToTensor(),
+        T.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
+    if train:
+        return datasets.CIFAR10(root=path, train=True, download=False, transform=transform_train)
+    else:
+        return datasets.CIFAR10(root=path, train=False, download=False, transform=transform_test)
 
 
 

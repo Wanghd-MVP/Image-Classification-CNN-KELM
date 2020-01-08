@@ -16,8 +16,7 @@ from config import opt
 from torchvision import datasets
 from torchvision import models
 from torchnet import meter
-from data.dataset import Caltech256
-from data.dataset import CIFAR100
+from data.dataset import *
 from torch.utils.data import DataLoader
 import shutil
 import time
@@ -26,7 +25,7 @@ from kelm import *
 from utils import init_model
 import torchvision.transforms as transforms
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 best_prec1 = 0
 def main():
     global args, best_prec1
@@ -44,10 +43,10 @@ def main():
         pth = torch.load(filename)
         state_dict = pth['state_dict']
         start_epoch = pth['epoch']
+        best_prec1 = pth['best_prec1']
         print(start_epoch)
         model.load_state_dict(state_dict)
 
-    datasets.CIFAR10
 
 
     # Data loading
@@ -59,19 +58,9 @@ def main():
         val_data = CIFAR100(opt.data_root, train=False)
 
     elif opt.dataset == 'cifar10':
-        transform_train = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-        ])
+        train_data = CIFAR10(opt.data_root, train = True)
+        val_data = CIFAR10(opt.data_root, train = False)
 
-        transform_test = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-        ])
-        train_data = datasets.CIFAR10(root=opt.data_root, train=True, download=False, transform=transform_train)
-        val_data = datasets.CIFAR10(root=opt.data_root, train=False, download=False, transform=transform_test)
     train_dataloader = DataLoader(train_data,
                                   batch_size=opt.train_batch_size,
                                   shuffle=True,
@@ -106,7 +95,7 @@ def main():
 
          # evaluate on validation set
         # prec1,testOutput,testFeature,testTarget = validate(val_dataloader,model,criterion)
-        prec1 = validate(val_dataloader,model,criterion)
+        prec1 ,prec5= validate(val_dataloader,model,criterion)
 
         label_kelm_prec1 =0
 
@@ -134,6 +123,7 @@ def main():
             'model': opt.model,
             'state_dict' : model.state_dict(),
             'best_prec1' : prec1,
+            'prec5':prec5
         },is_best,opt.checkpoints_dir)
 
         # save_everypoint({
@@ -320,7 +310,7 @@ def validate(val_loader, model, criterion):
     print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
           .format(top1=top1, top5=top5))
     # return top1.avg,testOutput,testFeature,testTarget
-    return top1.avg
+    return top1.avg,top5.avg
 
 
 

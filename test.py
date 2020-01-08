@@ -11,28 +11,49 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 from config import opt
-from utils import Visualizer
+# from utils import Visualizer
 # import models
 from torchvision import models
 from torchnet import meter
-from data.dataset import Caltech256
+from data.dataset import *
 from torch.utils.data import DataLoader
 import shutil
 import time
-
+from utils import init_model
 best_prec1 = 0
 def main():
     model = models.resnet50(pretrained=True, num_classes=1000)
     num_features = model.fc.in_features
     model.fc = nn.Linear(num_features, 257)
     model.cuda()
-    filename = 'resnet50_latest.pth.tar'
+
+    model = init_model(opt)
+
+    # model = nn.DataParallel(model)
+    model.cuda()
+
+    filename = opt.checkpoints_dir+'_latest.pth.tar'
     pth = torch.load(filename)
     state_dict = pth['state_dict']
+    start_epoch = pth['epoch']
+    best_prec1 = pth['best_prec1']
+    print(start_epoch)
     model.load_state_dict(state_dict)
-    test_data = Caltech256(opt.train_data_root, train=False, test =True )
-    test_dataloader = DataLoader(test_data,
-                                  batch_size=opt.batch_size,
+
+    # Data loading
+    if opt.dataset == 'caltech256':
+        train_data = Caltech256(opt.data_root, train=True)
+        val_data = Caltech256(opt.data_root, train=False)
+    elif opt.dataset == 'cifar100':
+        train_data = CIFAR100(opt.data_root, train=True)
+        val_data = CIFAR100(opt.data_root, train=False)
+
+    elif opt.dataset == 'cifar10':
+        train_data = CIFAR10(opt.data_root, train=True)
+        val_data = CIFAR10(opt.data_root, train=False)
+
+    test_dataloader = DataLoader(val_data,
+                                  batch_size=opt.test_batch_size,
                                   shuffle=True,
                                   num_workers=opt.num_workers)
 
@@ -77,9 +98,20 @@ def main():
     print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
           .format(top1=top1, top5=top5))
 
+    save_checkpoint({
+        'epoch': start_epoch + 1,
+        'model': opt.model,
+        'state_dict': model.state_dict(),
+        'best_prec1': top1.avg,
+        'prec5': top5.avg
+    }, True, opt.checkpoints_dir)
 
 
-
+def save_checkpoint(state, is_best, filename = 'checkpoint.pth.tar'):
+    torch.save(state,filename + '_latest.pth.tar')
+    if is_best:
+        shutil.copy(filename + '_latest.pth.tar', filename
+                    + '_best.pth.tar')
 
 
 class AverageMeter(object):

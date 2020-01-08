@@ -12,4 +12,5 @@ model_filename =  opt.checkpoints_dir+'_latest.pth.tar'
 state = torch.load(model_filename)
 print(state['epoch'])
 print(state['best_prec1'])
+print(state['prec5'])
 

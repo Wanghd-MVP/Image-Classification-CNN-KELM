@@ -11,9 +11,9 @@ class DefaultConfig(object):
     env = 'default'  # the env of visdom
     # model = 'vgg19'
     # model = 'vgg19_bn'
-    # model = 'resnet18'
+    model = 'resnet18'
     # model = 'resnet34'
-    model = 'resnet50'
+    # model = 'resnet50'
     # model = 'densenet121'
 
     # dataset path
@@ -27,9 +27,9 @@ class DefaultConfig(object):
 
 
 
-    # dataset = 'caltech256'
-    dataset = 'cifar100'
-    dataset = 'cifar10'
+    dataset = 'caltech256'
+    # dataset = 'cifar100'
+    # dataset = 'cifar10'
 
     if dataset == 'caltech256':
         pretrained = True
@@ -61,14 +61,14 @@ class DefaultConfig(object):
 
     # start_epoch = 49
     checkpoint = False
-    max_epoch = 1000
-    lr = 0.001
+    max_epoch = 100
+    lr = 0.0001
     lr_decay = 0.01
     weight_decay = 0.01    # 权重衰减
     momentum = 0.9
 
     # trick.
-    label_smooth = True
+    label_smooth = False
 
     # learning rate
     is_adjust_learning_rate = True

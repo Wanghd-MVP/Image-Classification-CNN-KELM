@@ -17,13 +17,14 @@ from torchvision import models
 from torchnet import meter
 from data.dataset import Caltech256
 from data.dataset import CIFAR100
+from data.dataset import CIFAR10
 from torch.utils.data import DataLoader
 import shutil
 import time
 import numpy as np
 
 from utils import init_model
-# os.environ['CUDA_VISIBLE_DEVICES'] = '0,2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 def extract_label_feature(is_train = True):
 
@@ -113,6 +114,8 @@ def data_loading(dataset='caltech256', is_train = True):
         return Caltech256(opt.data_root, train=is_train)
     elif dataset == 'cifar100':
         return CIFAR100(opt.data_root, train=is_train)
+    elif dataset == 'cifar10':
+        return CIFAR10(opt.data_root,train = is_train)
 
 
 def save_npy(dict,dir,is_train = True):
