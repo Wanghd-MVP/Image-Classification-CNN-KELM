@@ -1,14 +1,12 @@
-title:image classification using deep cnn and elm
-proposed by zhuangzi 
-    <image classification using convolutional neural networks and
-    kernel extreme learning machines>
+# Deep Label Rectified Extreme Learning Machine
 
-plan: ICIP   
-deadline: 1.29.2020
+# Dependencies
+* python 3.6
+* Pytorch >= 1.0.0
 
-project plan:
-    1.implement the cnn pretrain by imagenet
-    2.train this model by other dataset
-    3.remove the softmax layer and record the feature
-    4.implement the algorithm of kernel extreme learning machines
-    5.
+# How to
+* Training: python train.py
+* Testing : python test.py
+* Extract the feature: python extract_label_vector.py
+* Label Rectified: python kelm.py
+

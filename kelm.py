@@ -76,10 +76,10 @@ def read_npys(filename):
     return label,feature,target
 
 
-def get_perc1():
+def get_perc():
     model_filename = opt.checkpoints_dir + '_best.pth.tar'
     state = torch.load(model_filename)
-    return state['best_prec1']
+    return state['best_prec1'],state['prec5']
 
 if __name__ == '__main__':
     # main()
@@ -91,24 +91,25 @@ if __name__ == '__main__':
     label_train,feature_train,target_train = read_npys(train_filename)
     label_test, feature_test, target_test = read_npys(test_filename)
 
-    prec1 = get_perc1()
-    print('原本精确度：',prec1)
+    prec1,prec5 = get_perc()
+    print('原本精确度：top1:',prec1)
+    print('原本精确度：top5:',prec5)
 
     # label elm
     print('label based:')
     # label_clf = kelm_train(label_train,target_train,'sigmoid',1000,use_label_smooth=False)
     # kelm_test(label_clf, label_test, target_test, prec1)
 
-    label_clf = kelm_train(label_train, target_train, 'sigmoid', 1000, use_label_smooth=False)
+    label_clf = kelm_train(label_train, target_train, 'sigmoid', 5000, use_label_smooth=False)
     print('--------------------------------------------')
     kelm_test(label_clf, label_test, target_test, prec1)
 
-    label_clf = kelm_train(label_train, target_train, 'rbf', 1000, use_label_smooth=False)
+    label_clf = kelm_train(label_train, target_train, 'rbf', 5000, use_label_smooth=False)
     kelm_test(label_clf, label_test, target_test, prec1)
 
     # feature elm
     print('feature based:')
-    feature_clf =kelm_train(feature_train,target_train,'rbf',1000,use_label_smooth=False)
+    feature_clf =kelm_train(feature_train,target_train,'rbf',5000,use_label_smooth=False)
     kelm_test(feature_clf,feature_test,target_test,prec1)
 
 

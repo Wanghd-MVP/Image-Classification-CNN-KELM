@@ -10,8 +10,8 @@ import torch as t
 class DefaultConfig(object):
     env = 'default'  # the env of visdom
     # model = 'vgg19'
-    # model = 'vgg19_bn'
-    model = 'resnet18'
+    model = 'vgg19_bn'
+    # model = 'resnet18'
     # model = 'resnet34'
     # model = 'resnet50'
     # model = 'densenet121'
@@ -60,8 +60,8 @@ class DefaultConfig(object):
     print_freq = 10
 
     # start_epoch = 49
-    checkpoint = False
-    max_epoch = 100
+    checkpoint = True
+    max_epoch = 50
     lr = 0.0001
     lr_decay = 0.01
     weight_decay = 0.01    # 权重衰减
